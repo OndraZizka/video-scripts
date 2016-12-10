@@ -1,0 +1,36 @@
+#!/bin/bash
+
+. ~/sc/vid/_common.lib.sh  # $BEST_VIDEO
+
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+
+if [ "$#" < 4 ] ; then
+    echo "Expecting input file, top, right, bottom, left margin as 0.0 - 1.0, ['preview']. Examples:";
+    echo "'in.mp4 0.2 0.1 0 0.1  - to crop 20 % from top and 10 % from the sides.";
+    exit;
+fi
+TOP=$2
+RIGHT=$3
+BOTTOM=$4
+LEFT=$5
+
+NEW_NAME="$BASE_NAME-crop2-$TOP-$RIGHT-$BOTTOM-$LEFT.$SUFFIX";
+
+
+## Also see https://incenp.org/notes/2012/video-cropping.html
+## wid:hei:offX:offY
+FILTER="crop=in_w*(1-$LEFT-$RIGHT):in_h*(1-$TOP-$BOTTOM):in_w*$LEFT:in_h*$TOP";
+
+set -x
+if [ "$6" == "preview" ] ; then
+  ffplay -i "$INPUT" -vf "$FILTER"
+else
+  ffmpeg -i "$INPUT" -filter:v "$FILTER" $BEST_VIDEO -c:a copy "$NEW_NAME"
+  touch "$NEW_NAME" -r "$INPUT"
+fi
+set +x
+
+

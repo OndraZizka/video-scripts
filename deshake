@@ -1,0 +1,25 @@
+#!/bin/bash
+
+. _common.lib.sh  # $BEST_VIDEO
+
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+NEW_NAME="$BASE_NAME"-deshake.$SUFFIX
+
+
+set -x
+ffmpeg -i "$INPUT" -vf deshake=rx=64:ry=64:blocksize=12 -strict -2 $BEST_VIDEO "$NEW_NAME"  ## :opencl=1
+##  Expressions don't work here
+##ffmpeg -i "$INPUT" -vf deshake=rx=(iw/124):ry=(iw/124) -strict -2 "$NEW_NAME"
+
+#transcode -J stabilize -i "$INPUT" -y null,null -o dummy
+#transcode -J transform -i "$INPUT" -y xvid,null -o "$NEW_NAME"
+set +x
+
+touch "$NEW_NAME" -r "$INPUT"
+
+
+## Multi:
+#find . -name '*.mp4' -not -name  '*deshake.*' -print0 | xargs -0 -n 1 ~/sc/vid/deshake

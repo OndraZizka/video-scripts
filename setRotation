@@ -1,0 +1,13 @@
+#!/bin/bash
+
+INPUT=$1
+#BASE_NAME=basename "$INPUT" .mp4
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+
+NEW_NAME="$BASE_NAME"-rot.$SUFFIX
+
+ffmpeg -i "$INPUT" -c copy -metadata:s:v:0 rotate="$2" "$NEW_NAME"
+
+touch "$NEW_NAME" -r "$INPUT"

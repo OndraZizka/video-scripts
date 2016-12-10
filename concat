@@ -1,0 +1,61 @@
+#!/bin/bash
+
+##
+## Concatenates video clips using ffmpeg.
+##
+## @author Ondrej Zizka
+##
+
+. ~/sc/vid/_common.lib.sh
+
+set +x
+set -e
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+FFMPEG=ffmpeg
+
+if [ "$#" = 0 ] ; then
+    echo -e "$RED""concat ERROR:$NOCOLOR Expecting input files as arguments, or a .txt file with a file per line."; exit;
+
+##  A .txt file with a list of 
+elif [ "$#" = 1 -a "$SUFFIX" = "txt" ] ; then
+    VIDEO_LIST="$INPUT";
+    read -r LINE < "$VIDEO_LIST";
+    BASE_NAME="$LINE";
+    if [ "$BASE_NAME" == "" ] ; then echo -e "$RED""concat ERROR:$NOCOLOR The video list file '$VIDEO_LIST' is empty."; exit; fi
+    BASE_NAME="${BASE_NAME%.*}"
+    SUFFIX=${LINE##*.}
+    NEW_NAME="$BASE_NAME"-concat.$SUFFIX
+    echo -e "\n\n   Concatenating files from $VIDEO_LIST to $NEW_NAME\n\n";
+    rm -f ffmpegConcatList.txt
+    while IFS='' read -r LINE || [[ -n $SLINE ]] ; do
+        echo file \'$LINE\' >> ffmpegConcatList.txt
+    done < "$VIDEO_LIST"
+    #mv -f ffmpegConcatList.txt "$VIDEO_LIST"
+    VIDEO_LIST=ffmpegConcatList.txt
+
+##  Each argument is a video file to concat
+else
+    VIDEO_LIST=ffmpegConcatList.txt
+    truncate --size 0 $VIDEO_LIST;
+    for ARG in "$@"; do
+        echo "file '$ARG'" >> $VIDEO_LIST
+    done
+    NEW_NAME="$BASE_NAME"-concat.$SUFFIX
+fi
+
+
+
+set -x
+$FFMPEG -f concat -safe 0 -i $VIDEO_LIST -c copy "$NEW_NAME" ## && rm $VIDEO_LIST
+set +x
+
+
+touch "$NEW_NAME" -r "$INPUT"
+
+# mplayer -vo aa:width=160:height=80 -monitorpixelaspect $INPUT
+# export CACA_GEOMETRY=200x78
+# mplayer -vo caca $INPUT
+

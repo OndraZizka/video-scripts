@@ -1,0 +1,12 @@
+#!/bin/bash
+
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+
+NEW_NAME="$BASE_NAME"-noAudio.$SUFFIX
+
+ffmpeg -i "$INPUT" -c copy -an "$NEW_NAME"
+
+touch "$NEW_NAME" -r "$INPUT"

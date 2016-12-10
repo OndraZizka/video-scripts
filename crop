@@ -1,0 +1,39 @@
+#!/bin/bash
+
+. ~/sc/vid/_common.lib.sh  # $BEST_VIDEO
+
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+
+if [ "$#" < 4 ] ; then
+    echo "Expecting input file, x, y, Nth of original size, ['preview']. Examples:";
+    echo "'in.mp4 W2 H1 2' for upper left quarter";
+    echo "'in.mp4 W2 H2 3' for middle 9th";
+    echo "'in.mp4 W1.5 H1.5 2' for middle 4th";
+    exit;
+fi
+X=$2
+Y=$3
+N=$4
+
+NEW_NAME="$BASE_NAME-crop-$X-$Y-$N.$SUFFIX";
+
+if [[ "$X" == W* ]] ; then X="in_w/$N*(${X#W}-1)"; fi
+if [[ "$Y" == H* ]] ; then Y="in_h/$N*(${Y#H}-1)"; fi
+
+
+## Also see https://incenp.org/notes/2012/video-cropping.html
+## wid:hei:offX:offY
+FILTER="crop=in_w/$N:in_h/$N:$X:$Y";
+
+set -x
+if [ "$5" == "preview" ] ; then
+  ffplay -i "$INPUT" -vf "$FILTER"
+else
+  ffmpeg -i "$INPUT" -filter:v "$FILTER" $BEST_VIDEO -c:a copy "$NEW_NAME"
+fi
+set +x
+
+touch "$NEW_NAME" -r "$INPUT"

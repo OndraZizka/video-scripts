@@ -1,0 +1,19 @@
+#!/bin/bash
+
+. _common.lib.sh  # $BEST_VIDEO
+
+INPUT=$1
+SUFFIX=$2
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX_ORIG=${INPUT##*.}
+SUFFIX=${SUFFIX:=$SUFFIX_ORIG}
+NEW_NAME="$BASE_NAME"-reEnc.$SUFFIX
+
+
+set -e
+set -x
+ffmpeg -y -hide_banner -i "$INPUT" -bt 50M -vf "mpdecimate,setpts=N/FRAME_RATE/TB" -strict -2 $BEST_VIDEO -pix_fmt yuv420p -movflags "+faststart" "$NEW_NAME"
+set +x
+
+touch "$NEW_NAME" -r "$INPUT"

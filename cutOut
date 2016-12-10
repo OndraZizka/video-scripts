@@ -1,0 +1,50 @@
+#!/bin/bash
+
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+NEW_NAME="$BASE_NAME"-cutOut.$SUFFIX
+TMP_A="$BASE_NAME"-tmpA.$SUFFIX
+TMP_B="$BASE_NAME"-tmpB.$SUFFIX
+
+if [ "$#" != 3 ] ; then echo "Expecting input file, start <mm:ss>, duration <mm:ss>."; exit; fi
+
+
+set -x
+ffmpeg -i "$INPUT" -ss 00:00:00.0 -c copy -t 00:"$2".0 "$TMP_A"
+ffmpeg -i "$INPUT" -ss 00:"$3".0 -c copy -t 99:00:00.0 "$TMP_B"
+set +x
+echo -e "$TMP_A" >  /tmp/cutOutConcat.txt
+echo -e "$TMP_B" >> /tmp/cutOutConcat.txt
+set -x
+ffmpeg -f concat -i /tmp/cutOutConcat.txt -c copy "$NEW_NAME"
+set +x
+touch "$NEW_NAME" -r "$INPUT"
+
+
+function countTimeDiff() {
+    timeA=$1 # 09:59:35
+    timeB=$2 # 17:32:55
+
+    # feeding variables by using read and splitting with IFS
+    IFS=: read ah am as <<< "$timeA"
+    IFS=: read bh bm bs <<< "$timeB"
+
+    # Convert hours to minutes.
+    # The 10# is there to avoid errors with leading zeros
+    # by telling bash that we use base 10
+    secondsA=$((10#$ah*60*60 + 10#$am*60 + 10#$as))
+    secondsB=$((10#$bh*60*60 + 10#$bm*60 + 10#$bs))
+    DIFF_SEC=$((secondsB - secondsA))
+    echo "The difference is $DIFF_SEC seconds.";
+
+    SEC=$(($DIFF_SEC%60))
+    MIN=$((($DIFF_SEC-$SEC)%3600/60))
+    HRS=$((($DIFF_SEC-$MIN*60)/3600))
+    TIME_DIFF="$HRS:$MIN:$SEC";
+    echo $TIME_DIFF;
+}
+
+
+

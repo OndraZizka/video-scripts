@@ -1,0 +1,27 @@
+#!/bin/bash
+
+. ~/sc/vid/_common.lib.sh
+
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+
+if [ "$#" -lt 3 ] ; then echo "Expecting input file, start <mm:ss>, duration <mm:ss>."; exit; fi
+START=00:$2
+STOP=00:$3
+DURATION=`countTimeDiff2 "$START" "$STOP"`;
+
+NEW_NAME="$BASE_NAME"-clip-${START//:/.}+${DURATION//:/.}.$SUFFIX
+
+if [ "$4" == "recode" -o "$4" == "reencode" ] ; then
+    CODEC="-c:a copy -c:v libx264" # -crf 18 - doesn't work with my built ffmpeg
+else
+    CODEC="-c copy"
+fi
+
+set -x
+ffmpeg -i "$INPUT" -ss "$START".0 $CODEC -t "$DURATION".0 "$NEW_NAME"
+set +x
+
+touch "$NEW_NAME" -r "$INPUT"

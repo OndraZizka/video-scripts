@@ -1,0 +1,21 @@
+#!/bin/bash
+
+
+INPUT=$1
+#BASE_NAME=basename "$INPUT" .mp4
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+
+NEW_NAME="$BASE_NAME"-rot.$SUFFIX
+
+if [ "$#" < 2 ] ; then echo "Expecting input file, rotation - 0 cw+Vflip, 1 cw, 2 ccw, 3 ccw+Vflip."; exit; fi
+
+## For quality settings see https://trac.ffmpeg.org/wiki/Encode/H.264
+#-b:v 1M
+set -x
+ffmpeg -i "$INPUT" -vf "transpose=$2" -preset veryslow -tune film -c:v libx264 -c:a copy "$NEW_NAME"
+set +x
+
+touch "$NEW_NAME" -r "$INPUT"
+

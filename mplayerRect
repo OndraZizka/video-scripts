@@ -1,0 +1,19 @@
+#!/bin/bash
+
+mplayer -vf rectangle -input conf=crop "$1"
+
+##  Refers to ~/.mplayer/crop
+##  See https://incenp.org/notes/2012/video-cropping.html
+##  Observe rect dimensions at stdout
+
+<<EOF
+RIGHT change_rectangle 2  10
+LEFT  change_rectangle 2 -10
+UP    change_rectangle 3 -10
+DOWN  change_rectangle 3  10
+KP6   change_rectangle 0  10
+KP4   change_rectangle 0 -10
+KP8   change_rectangle 1  10
+KP2   change_rectangle 1 -10
+EOF
+

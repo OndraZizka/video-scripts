@@ -1,0 +1,17 @@
+#!/bin/bash
+
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+NEW_NAME="$BASE_NAME"-clip.$SUFFIX
+
+if [ "$#" != 3 ] ; then echo "Expecting input file, start <mm:ss>, duration <mm:ss>."; exit; fi
+
+set -x
+## ffmpeg -i "$INPUT" -ss 00:"$2".0 -c copy -t 00:"$3".0 "$NEW_NAME"
+ffmpeg -i "$INPUT" -filter_complex "[0:v]setpts=2.0*PTS[v];[0:a]atempo=2.0[a]" -map "[v]" -map "[a]" "$NEW_NAME"
+## See https://trac.ffmpeg.org/wiki/How%20to%20speed%20up%20/%20slow%20down%20a%20video
+set +x
+
+touch "$NEW_NAME" -r "$INPUT"
