@@ -1,0 +1,25 @@
+#!/bin/bash
+
+
+INPUT=$1
+#BASE_NAME=basename "$INPUT" .mp4
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+
+
+
+NEW_NAME="$BASE_NAME"-rotMeta.$SUFFIX
+
+if [ "$#" != 2 ] ; then echo "Expecting params: <input file> <rotation in degerees>."; exit; fi
+
+## For quality settings see https://trac.ffmpeg.org/wiki/Encode/H.264
+#-b:v 1M
+set -x
+## Doesn't really work.
+ffmpeg -i "$INPUT" -metadata:s:v rotate="$2" -codec copy "$NEW_NAME"
+##ffmpeg -i "$INPUT" -vf "transpose=2,transpose=2" -preset veryslow -tune film -c:v libx264 -c:a copy "$NEW_NAME"
+set +x
+
+touch "$NEW_NAME" -r "$INPUT"
+

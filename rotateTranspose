@@ -6,15 +6,27 @@ INPUT=$1
 BASE_NAME=`basename "$INPUT"`
 BASE_NAME="${BASE_NAME%.*}"
 SUFFIX=${INPUT##*.}
-
 NEW_NAME="$BASE_NAME"-rot.$SUFFIX
 
-if [ "$#" < 2 ] ; then echo "Expecting input file, rotation - 0 cw+Vflip, 1 cw, 2 ccw, 3 ccw+Vflip."; exit; fi
+if [ "$#" != 2 ] ; then echo "Expecting params: <input file> <rotation> - 0 cw+Vflip, 1 cw, 2 ccw, 3 ccw+Vflip, 180 for ccw,ccw."; exit; fi
+
+
+
+ROTATION=$2;
+VF="transpose=$ROTATION";
+if [ "$ROTATION" == "180" ] ; then
+  VF="transpose=2,transpose=2";  ## this will apply CCW twice.
+  VF="hflip,vflip";  ## Alternative, could be faster.
+  NEW_NAME="$BASE_NAME"-rot180.$SUFFIX
+fi
+
+
 
 ## For quality settings see https://trac.ffmpeg.org/wiki/Encode/H.264
 #-b:v 1M
 set -x
-ffmpeg -i "$INPUT" -vf "transpose=$2" -preset veryslow -tune film -c:v libx264 -c:a copy "$NEW_NAME"
+ffmpeg -noautorotate -i "$INPUT" -vf "$VF,format=yuv420p" -metadata:s:v rotate=0 \
+   -preset veryslow -tune film -c:v libx264 -c:a copy "$NEW_NAME"
 set +x
 
 touch "$NEW_NAME" -r "$INPUT"

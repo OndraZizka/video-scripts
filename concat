@@ -55,7 +55,3 @@ set +x
 
 touch "$NEW_NAME" -r "$INPUT"
 
-# mplayer -vo aa:width=160:height=80 -monitorpixelaspect $INPUT
-# export CACA_GEOMETRY=200x78
-# mplayer -vo caca $INPUT
-

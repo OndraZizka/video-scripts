@@ -1,13 +1,24 @@
 #!/bin/bash
 
+
+## This only sets the video metadata.
+## It may lead to some bugs in video players, like, VLC's interactive zoom controls misplacement.
+
 INPUT=$1
 #BASE_NAME=basename "$INPUT" .mp4
 BASE_NAME=`basename "$INPUT"`
 BASE_NAME="${BASE_NAME%.*}"
 SUFFIX=${INPUT##*.}
 
-NEW_NAME="$BASE_NAME"-rot.$SUFFIX
+NEW_NAME="$BASE_NAME"-rotMeta.$SUFFIX
 
-ffmpeg -i "$INPUT" -c copy -metadata:s:v:0 rotate="$2" "$NEW_NAME"
+if [ "$#" != 2 ] ; then
+  echo "Expecting params: <input file> <rotation> - 0 cw+Vflip, 1 cw, 2 ccw, 3 ccw+Vflip.";
+  echo "              or: rotation 90, 180, 270";  
+  exit;
+fi
+
+##ffmpeg -i "$INPUT" -c copy -metadata:s:v:0 rotate="$2" "$NEW_NAME"
+ffmpeg -noautorotate -i "$INPUT" -c copy -metadata:s:v rotate="$2" "$NEW_NAME"
 
 touch "$NEW_NAME" -r "$INPUT"

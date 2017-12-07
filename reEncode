@@ -1,5 +1,13 @@
 #!/bin/bash
 
+
+##
+## Usage:    reEncode <input-file> [<suffix>]
+## Example:  reEncode foo.ogv mp4
+##
+## Reencodes the given input file using ffmpeg. If the suffix is given, reencodes the file to that format.
+##
+
 . _common.lib.sh  # $BEST_VIDEO
 
 INPUT=$1

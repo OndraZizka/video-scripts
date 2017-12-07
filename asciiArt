@@ -1,0 +1,12 @@
+#!/bin/bash
+
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+FFMPEG=ffmpeg
+
+
+# mplayer -vo aa:width=160:height=80 -monitorpixelaspect $INPUT
+export CACA_GEOMETRY=220x78
+mplayer -vo caca $INPUT
