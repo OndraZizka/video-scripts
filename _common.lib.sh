@@ -1,10 +1,12 @@
 #!/bin/bash
 
-BEST_CODEC="-c:v libx264  -crf 17"  # -qp 0 is looseless.
-BEST_PRESET="-preset slow -tune film"  # -b:v 555k | 1M etc.
-BEST_PROFILE="-profile:v high -level 4.2"
+## For the details, see https://trac.ffmpeg.org/wiki/Encode/H.264
 
-BEST_VIDEO="$BEST_CODEC $BEST_PRESET"
+BEST_CODEC="-c:v libx264  -crf 17"         # -qp 0 is looseless.
+BEST_PRESET="-preset slow -tune film"      # -b:v 555k | 1M etc.
+BEST_PROFILE="-profile:v high -level 4.2"  ## Use the newest H264 features for encoding.
+
+BEST_VIDEO="$BEST_CODEC $BEST_PRESET $BEST_PROFILE"
 
 COMPAT_MODE="-pix_fmt yuv420p"
 

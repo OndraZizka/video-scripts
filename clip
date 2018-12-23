@@ -1,6 +1,7 @@
 #!/bin/bash
 
-. ~/sc/vid/_common.lib.sh
+SCRIPT_DIR=$(dirname $(realpath $0))
+. "$SCRIPT_DIR/_common.lib.sh"  # $BEST_VIDEO
 
 INPUT=$1
 BASE_NAME=`basename "$INPUT"`
@@ -8,8 +9,21 @@ BASE_NAME="${BASE_NAME%.*}"
 SUFFIX=${INPUT##*.}
 
 if [ "$#" -lt 3 ] ; then echo "Expecting input file, start <mm:ss>, duration <mm:ss>."; exit; fi
-START=00:$2
-STOP=00:$3
+START=$2
+STOP=$3
+
+case START in 
+    *:*:*) START= "00:$START" ;;
+    *:*)   START= "00:$START" ;;
+    *)     START= "00:00:$START" ;;
+esac
+
+case STOP in 
+    *:*:*) STOP= "00:$STOP" ;;
+    *:*)   STOP= "00:$STOP" ;;
+    *)     STOP= "00:00:$STOP" ;;
+esac
+
 DURATION=`countTimeDiff2 "$START" "$STOP"`;
 
 NEW_NAME="$BASE_NAME"-clip-${START//:/.}+${DURATION//:/.}.$SUFFIX
