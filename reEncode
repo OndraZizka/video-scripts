@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 ##
 ## Usage:    reEncode <input-file> [<suffix>]
 ## Example:  reEncode foo.ogv mp4
@@ -8,20 +7,43 @@
 ## Reencodes the given input file using ffmpeg. If the suffix is given, reencodes the file to that format.
 ##
 
-. _common.lib.sh  # $BEST_VIDEO
+SCRIPT_DIR=$(dirname $(realpath $0))
+. "$SCRIPT_DIR/_common.lib.sh"  # $BEST_VIDEO
+
 
 INPUT=$1
 SUFFIX=$2
 BASE_NAME=`basename "$INPUT"`
 BASE_NAME="${BASE_NAME%.*}"
 SUFFIX_ORIG=${INPUT##*.}
+echo "\"$SUFFIX_ORIG\" == \"mkv\" -a \"mkv\" != \"$SUFFIX\""
+if [ "$SUFFIX" == "mkv" -a "mkv" != "$SUFFIX_ORIG" ] ; then echo "WARNING: The target format is MKV. Run '$0 $1 mkv' to confirm."; exit; fi
+
 SUFFIX=${SUFFIX:=$SUFFIX_ORIG}
 NEW_NAME="$BASE_NAME"-reEnc.$SUFFIX
 
 
 set -e
 set -x
-ffmpeg -y -hide_banner -i "$INPUT" -bt 50M -vf "mpdecimate,setpts=N/FRAME_RATE/TB" -strict -2 $BEST_VIDEO -pix_fmt yuv420p -movflags "+faststart" "$NEW_NAME"
+
+## -movflags "+faststart"                   Moves the MOOV atom to the beginning of the file.
+## -strict experimental (or -strict -2)     Turns on experimental features.
+## -vf format=yuv420p or -pix_fmt yuv420p   Uses the most compatible chroma subsampling (for QuickTime?)
+## mpdecimate                               Removes similar frames. May shorten play time for MOV or MP4 envelope. 
+## setpts=N/FRAME_RATE/TB                   with mpdecimate - controls how the time for missing frames is spread to other frames. Doesn't work for MOV / MP4?
+#fmpeg -y -hide_banner -i "$INPUT" -bt 50M -vf "mpdecimate,setpts=N/FRAME_RATE/TB" -strict -2 $BEST_VIDEO -pix_fmt yuv420p -movflags "+faststart" "$NEW_NAME"
+ffmpeg -y -hide_banner -i "$INPUT" -strict experimental $BEST_VIDEO -movflags "+faststart" "$NEW_NAME"
 set +x
 
 touch "$NEW_NAME" -r "$INPUT"
+
+
+## TODO: Could do 2 pass encoding
+##
+##    ffmpeg -i input -c:v libx264 -b:v 1M -maxrate 1M -bufsize 2M -pass 1 -f mp4 /dev/null
+##    ffmpeg -i input -c:v libx264 -b:v 1M -maxrate 1M -bufsize 2M -pass 2 output.mp4
+##
+##  Will two-pass provide a better quality than CRF?
+##    ​No, though it does allow you to target a file size more accurately.
+##
+## See https://trac.ffmpeg.org/wiki/Encode/H.264
