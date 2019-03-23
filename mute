@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
+SCRIPT_DIR=$(dirname $(realpath $0))
+. $SCRIPT_DIR/_common.lib.sh
 
-. ~/sc/vid/_common.lib.sh
 
 INPUT=$1
 BASE_NAME=`basename "$INPUT"`

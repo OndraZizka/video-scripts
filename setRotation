@@ -1,4 +1,5 @@
 #!/bin/bash
+SCRIPT_DIR=$(dirname $(realpath $0))
 
 
 ## This only sets the video metadata.
