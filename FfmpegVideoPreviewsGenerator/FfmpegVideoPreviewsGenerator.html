@@ -1,0 +1,572 @@
+<html prefix="og: http://ogp.me/ns#" lang="en-US"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<title>How to Generate Better Video Previews with ffmpeg</title>
+<link rel="icon" type="image/icon" href="https://www.binpress.com/wp-content/themes/binpress/favicon.ico" sizes="32x32">
+<link rel="profile" href="https://gmpg.org/xfn/11">
+<link rel="pingback" href="https://www.binpress.com/xmlrpc.php">
+<!-- This site is optimized with the Yoast SEO plugin v10.0.1 - https://yoast.com/wordpress/plugins/seo/ -->
+<link rel="canonical" href="https://www.binpress.com/generate-video-previews-ffmpeg/">
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to Generate Better Video Previews with ffmpeg">
+<meta property="og:description" content="Embedding videos from third party providers like YouTube or Vimeo is very common nowadays. For whatever reason none of them give any&nbsp;useful&nbsp;previews.&nbsp;Youtube, for example, only generates four images&nbsp;to choose from, but that’s not what we want. What would be really nice is if every video on YouTube had a preview (...) Read More »">
+<meta property="og:url" content="https://www.binpress.com/generate-video-previews-ffmpeg/">
+<meta property="og:site_name" content="binPress">
+<meta property="og:image" content="https://www.binpress.com/wp-content/uploads/2018/09/video-preview-ffmpeg.gif">
+<meta property="og:image:secure_url" content="https://www.binpress.com/wp-content/uploads/2018/09/video-preview-ffmpeg.gif">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:description" content="Embedding videos from third party providers like YouTube or Vimeo is very common nowadays. For whatever reason none of them give any&nbsp;useful&nbsp;previews.&nbsp;Youtube, for example, only generates four images&nbsp;to choose from, but that’s not what we want. What would be really nice is if every video on YouTube had a preview (...) Read More »">
+<meta name="twitter:title" content="How to Generate Better Video Previews with ffmpeg">
+<meta name="twitter:image" content="https://www.binpress.com/wp-content/uploads/2018/09/video-preview-ffmpeg.gif">
+<!-- / Yoast SEO plugin. -->
+<link rel="dns-prefetch" href="https://www.google.com/">
+<link rel="dns-prefetch" href="https://cdn.rawgit.com/">
+<link rel="dns-prefetch" href="https://fonts.googleapis.com/">
+<link rel="dns-prefetch" href="https://s.w.org/">
+<link rel="alternate" type="application/rss+xml" title="binPress » Feed" href="https://www.binpress.com/feed/">
+<link rel="alternate" type="application/rss+xml" title="binPress » Comments Feed" href="https://www.binpress.com/comments/feed/">
+<style type="text/css" media="all">
+.wpautoterms-footer{background-color:#ffffff;text-align:center;}
+.wpautoterms-footer a{color:#000000;font-family:Arial, sans-serif;font-size:14px;}
+.wpautoterms-footer .separator{color:#cccccc;font-family:Arial, sans-serif;font-size:14px;}</style>
+<!-- <link rel='stylesheet' id='wpautoterms_css-css'  href='https://www.binpress.com/wp-content/plugins/auto-terms-of-service-and-privacy-policy/css/wpautoterms.css?ver=5.1.1' type='text/css' media='all' /> -->
+<!-- <link rel='stylesheet' id='contact-form-7-css'  href='https://www.binpress.com/wp-content/plugins/contact-form-7/includes/css/styles.css?ver=5.1.1' type='text/css' media='all' /> -->
+<!-- <link rel='stylesheet' id='style-css'  href='https://www.binpress.com/wp-content/themes/binpress/style.css?ver=all' type='text/css' media='all' /> -->
+<link rel="stylesheet" type="text/css" href="FfmpegVideoPreviewsGenerator_files/a6ybx.css" media="all">
+<link rel="stylesheet" id="nunito-sans-css" href="FfmpegVideoPreviewsGenerator_files/css.css" type="text/css" media="all">
+<div class="fit-vids-style">­<style>               .fluid-width-video-wrapper {                 width: 100%;                              position: relative;                       padding: 0;                            }                                                                                   .fluid-width-video-wrapper iframe,        .fluid-width-video-wrapper object,        .fluid-width-video-wrapper embed {           position: absolute;                       top: 0;                                   left: 0;                                  width: 100%;                              height: 100%;                          }                                       </style></div><script type="text/javascript" async="" src="FfmpegVideoPreviewsGenerator_files/analytics.js"></script><script type="text/javascript" async="" src="FfmpegVideoPreviewsGenerator_files/recaptcha__en.js"></script><script>if (document.location.protocol != "https:") {document.location = document.URL.replace(/^http:/i, "https:");}</script><style>@media print {#ghostery-purple-box {display:none !important}}</style><script src="FfmpegVideoPreviewsGenerator_files/a6ybx.js" type="text/javascript"></script>
+<!-- <script type='text/javascript' src='https://www.binpress.com/wp-includes/js/jquery/jquery.js?ver=1.12.4'></script> -->
+<!-- <script type='text/javascript' src='https://www.binpress.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script> -->
+<!-- <script type='text/javascript' src='https://www.binpress.com/wp-content/themes/binpress/js/scroll.js?ver=5.1.1'></script> -->
+<!-- <script type='text/javascript' src='https://www.binpress.com/wp-content/themes/binpress/js/global.js?ver=5.1.1'></script> -->
+<link rel="stylesheet" type="text/css" href="FfmpegVideoPreviewsGenerator_files/sunburst.css">
+<link rel="https://api.w.org/" href="https://www.binpress.com/wp-json/">
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://www.binpress.com/xmlrpc.php?rsd">
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://www.binpress.com/wp-includes/wlwmanifest.xml"> 
+<meta name="generator" content="WordPress 5.1.1">
+<link rel="shortlink" href="https://www.binpress.com/?p=271">
+<link rel="alternate" type="application/json+oembed" href="https://www.binpress.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.binpress.com%2Fgenerate-video-previews-ffmpeg%2F">
+<link rel="alternate" type="text/xml+oembed" href="https://www.binpress.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.binpress.com%2Fgenerate-video-previews-ffmpeg%2F&amp;format=xml">
+<link rel="stylesheet" type="text/css" href="FfmpegVideoPreviewsGenerator_files/dark-floating.css"></head>
+<body data-rsssl="1" class="page-template-default page page-id-271">
+<header id="header" class="site-header" role="banner">
+<div class="container row">
+<div class="col span_4">
+<a id="brand" href="https://www.binpress.com/" rel="home"><img src="FfmpegVideoPreviewsGenerator_files/logo.png"></a>
+</div>
+<div class="col span_8">
+<div class="menu-btn" id="menu-btn">
+<span></span>
+<span></span>
+<span></span>
+</div>
+<div class="responsive-menu">
+<div class="menu-main-menu-container"><ul id="menu-main-menu" class="menu"><li id="menu-item-6" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-6"><a href="https://www.binpress.com/blog/">Blog</a></li>
+<li id="menu-item-1272" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1272"><a href="https://www.binpress.com/blogging/">Blogging</a></li>
+<li id="menu-item-1193" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1193"><a href="https://www.binpress.com/tools/">Tools</a></li>
+<li id="menu-item-1128" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1128"><a href="https://www.binpress.com/best-hosting/">Hosting</a></li>
+<li id="menu-item-1222" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1222"><a href="https://www.binpress.com/make-money/">Make Money</a></li>
+<li id="menu-item-1197" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-1197"><a href="https://www.binpress.com/tutorials/">Tutorials</a></li>
+</ul></div>                			<div id="search-form">
+<form role="search" method="get" class="search-form" action="https://www.binpress.com/">
+<label>
+<input type="search" class="search-field" placeholder="Search" name="s" title="Search for:">
+</label>
+<input type="submit" class="search-submit" value="Search">
+</form>
+</div>
+</div>
+</div>
+</div>
+</header>
+<div id="primary">
+<article id="custom-post" class="container">
+<div class="post-img"></div>
+<div class="content row">
+<div class="the-content row">
+<h1 class="title">How to Generate Better Video Previews with ffmpeg</h1>
+<p>Embedding videos from third party providers like YouTube or Vimeo is 
+very common nowadays. For whatever reason none of them give any&nbsp;<em>useful</em>&nbsp;previews.&nbsp;<a href="http://stackoverflow.com/questions/2068344/how-do-i-get-a-youtube-video-thumbnail-from-the-youtube-api" target="_blank" rel="noopener">Youtube, for example, only generates four images</a>&nbsp;to choose from, but that’s not what we want.<br>
+What would be really nice is if every video on YouTube had a preview like this:</p>
+<p><img class="alignnone size-full wp-image-273" src="FfmpegVideoPreviewsGenerator_files/video-preview-ffmpeg.gif" alt="video-preview-ffmpeg" width="230" height="140"></p>
+<p><a href="http://jsfiddle.net/r6wz0nz6/2/" target="_blank" rel="noopener">You can try a live demo here.</a></p>
+<p>Basically, this is just a single JPEG&nbsp;<code>21300x120</code>&nbsp;in size containing 100 small screenshots (like a film strip).&nbsp;<a href="http://i.imgur.com/BX0pV4J.jpg" target="_blank" rel="noopener">See for yourself</a>.</p>
+<p>Fortunately for us, we can make this kind of preview with a little bit of&nbsp;<code>ffmpeg</code>,&nbsp;<code>bash</code>&nbsp;scripting and&nbsp;<code>jQuery</code>.</p>
+<p>For the purpose of this tutorial, I’m going to use the&nbsp;<a href="https://www.youtube.com/watch?v=v1uyQZNg2vE" target="_blank" rel="noopener">Google Glass teaser on YouTube</a>&nbsp;and
+ generate a preview with 100 frames that’s 120px in height. Of course, 
+various videos have various aspect ratios but I assume that you want to 
+have all previews with the same height and varying width.</p>
+<p><em>Please note, that I’m using&nbsp;<code>ffmpeg 2.2.2</code>, although all functionality used in this tutorial should be already implemented in older versions.</em></p>
+<h2>1. Download a video from YouTube, Vimeo, etc. (optional)</h2>
+<p>In order to generate a video preview we have to download the video first. I strongly recommend you use&nbsp;<a href="http://rg3.github.io/youtube-dl/" target="_blank" rel="noopener"><code>youtube-dl</code></a>&nbsp;(<a href="http://rg3.github.io/youtube-dl/download.html" target="_blank" rel="noopener">see installation notes</a>. It’s up to date and it&nbsp;<a href="http://rg3.github.io/youtube-dl/supportedsites.html" target="_blank" rel="noopener">supports many sites</a>).
+ The sweet thing is that you don’t have to download full size video in 
+order to make a preview that’s only 120px tall. Let’s list all formats 
+that YouTube generated for this video (parameter&nbsp;<code>-F</code>&nbsp;works only with YouTube):</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">&nbsp;youtube</span><span class="pun">-</span><span class="pln">dl </span><span class="pun">-</span><span class="pln">F https</span><span class="pun">:</span><span class="com">//www.youtube.com/watch?v=v1uyQZNg2vE</span></code></li>
+</ol>
+<p>There’s quiet a lot of them (<a href="http://en.wikipedia.org/wiki/YouTube#Quality_and_codecs" target="_blank" rel="noopener">see all supported video formats on YouTube</a>):</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">&nbsp;</span><span class="pun">[</span><span class="pln">youtube</span><span class="pun">]</span> <span class="typ">Setting</span><span class="pln"> language</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">&nbsp;</span><span class="pun">[</span><span class="pln">youtube</span><span class="pun">]</span><span class="pln"> v1uyQZNg2vE</span><span class="pun">:</span> <span class="typ">Downloading</span><span class="pln"> webpage</span><br>
+</code></li>
+<li class="L2"><code><span class="pln">&nbsp;</span><span class="pun">[</span><span class="pln">youtube</span><span class="pun">]</span><span class="pln"> v1uyQZNg2vE</span><span class="pun">:</span> <span class="typ">Downloading</span><span class="pln"> video info webpage</span><br>
+</code></li>
+<li class="L3"><code><span class="pln">&nbsp;</span><span class="pun">[</span><span class="pln">youtube</span><span class="pun">]</span><span class="pln"> v1uyQZNg2vE</span><span class="pun">:</span> <span class="typ">Extracting</span><span class="pln"> video information</span><br>
+</code></li>
+<li class="L4"><code><span class="pln">&nbsp;</span><span class="pun">[</span><span class="pln">info</span><span class="pun">]</span> <span class="typ">Available</span><span class="pln"> formats </span><span class="kwd">for</span><span class="pln"> v1uyQZNg2vE</span><span class="pun">:</span><br>
+</code></li>
+<li class="L5"><code><span class="pln">&nbsp;format code extension resolution &nbsp;note</span><br>
+</code></li>
+<li class="L6"><code><span class="pln">&nbsp;</span><span class="lit">171</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp; webm &nbsp; &nbsp; &nbsp;audio only &nbsp;DASH audio </span><span class="pun">,</span><span class="pln"> audio@ </span><span class="lit">48k</span> <span class="pun">(</span><span class="pln">worst</span><span class="pun">)</span><br>
+</code></li>
+<li class="L7"><code><span class="pln">&nbsp;</span><span class="lit">140</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp; m4a &nbsp; &nbsp; &nbsp; audio only &nbsp;DASH audio </span><span class="pun">,</span><span class="pln"> audio@128k</span><br>
+</code></li>
+<li class="L8"><code><span class="pln">&nbsp;</span><span class="lit">160</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp; mp4 &nbsp; &nbsp; &nbsp; </span><span class="lit">144p</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp;DASH video </span><span class="pun">,</span><span class="pln"> video only</span><br>
+</code></li>
+<li class="L9"><code><span class="pln">&nbsp;</span><span class="lit">242</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp; webm &nbsp; &nbsp; &nbsp;</span><span class="lit">240p</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp;DASH video </span><span class="pun">,</span><span class="pln"> video only</span><br>
+</code></li>
+<li class="L0"><code><span class="pln">&nbsp;</span><span class="lit">133</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp; mp4 &nbsp; &nbsp; &nbsp; </span><span class="lit">240p</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp;DASH video </span><span class="pun">,</span><span class="pln"> video only</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">&nbsp;</span><span class="lit">243</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp; webm &nbsp; &nbsp; &nbsp;</span><span class="lit">360p</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp;DASH video </span><span class="pun">,</span><span class="pln"> video only</span><br>
+</code></li>
+<li class="L2"><code><span class="pln">&nbsp;</span><span class="lit">134</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp; mp4 &nbsp; &nbsp; &nbsp; </span><span class="lit">360p</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp;DASH video </span><span class="pun">,</span><span class="pln"> video only</span><br>
+</code></li>
+<li class="L3"><code><span class="pln">&nbsp;</span><span class="pun">...</span><br>
+</code></li>
+<li class="L4"><code><span class="pln">&nbsp;</span><span class="lit">22</span><span class="pln"> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;mp4 &nbsp; &nbsp; &nbsp; </span><span class="lit">1280x720</span><span class="pln"> &nbsp; &nbsp;</span><span class="pun">(</span><span class="pln">best</span><span class="pun">)</span></code></li>
+</ol>
+<p>At the bottom there’s the default resolution of&nbsp;<code>1280x720 (best)</code>&nbsp;(with format itag&nbsp;<code>22</code>), but&nbsp;<code>360p</code>with itag&nbsp;<code>134</code>&nbsp;is sufficient for our needs.</p>
+<p>It’s always better to choose those with relative width (that’s&nbsp;<code>144p</code>,&nbsp;<code>240p</code>,&nbsp;<code>360p</code>,&nbsp;<code>480p</code>,
+ etc.) because fixed size formats might have black stripes at the top 
+and bottom, and as I said earlier we want a fixed height of 120px with 
+various widths.</p>
+<p>We can download our video with&nbsp;<code>360p</code>&nbsp;and save it as&nbsp;<code>video.mp4</code>&nbsp;(cca&nbsp;<code>8.28MB</code>).</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">youtube</span><span class="pun">-</span><span class="pln">dl </span><span class="pun">-</span><span class="pln">f </span><span class="lit">134</span> <span class="pun">-</span><span class="pln">o video</span><span class="pun">.</span><span class="pln">mp4 https</span><span class="pun">:</span><span class="com">//www.youtube.com/watch?v=v1uyQZNg2vE</span></code></li>
+</ol>
+<h2>2. Getting the total number of frames in a video</h2>
+<p>Since&nbsp;<code>ffmpeg</code>&nbsp;doesn’t have any built-in option for making video previews we have to tell it to&nbsp;<em>“make a screenshot every Nth frame”</em>. In order to do this we need to know the number of frames in our video and that requires some scripting.</p>
+<p>The easiest way is to use&nbsp;<code>ffprobe</code>&nbsp;which is a utility that comes with&nbsp;<code>ffmpeg</code>&nbsp;and is designed to extract various bits of information from videos in human and machine-readable formats.</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">$ ffprobe </span><span class="pun">-</span><span class="pln">show_streams </span><span class="str">"video.mp4"</span> <span class="lit">2</span><span class="pun">&gt;</span> <span class="str">/dev/</span><span class="kwd">null</span> <span class="pun">|</span><span class="pln"> grep nb_frames </span><span class="pun">|</span><span class="pln"> head </span><span class="pun">-</span><span class="pln">n1 </span><span class="pun">|</span><span class="pln"> sed </span><span class="str">'s/.*=//'</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">N</span><span class="pun">/</span><span class="pln">A</span></code></li>
+</ol>
+<ul>
+<li><code>-show-streams</code>&nbsp;Shows all streams found in the video. Each video usually has two streams (video and audio).</li>
+<li><code>head -n1</code>&nbsp;We only care about the video stream, which comes first.</li>
+<li><code>sed 's/.*=//'</code>&nbsp;Grab everything after&nbsp;<code>=</code>.</li>
+</ul>
+<p>Oh, did it really return&nbsp;<code>N/A</code>?</p>
+<p>Unfortunately, this method works only with some videos.&nbsp;<code>ffprobe</code>&nbsp;reads information from video streams and, in my experience, videos downloaded from YouTube usually have&nbsp;<code>nb_frames</code>&nbsp;equal to&nbsp;<code>N/A</code>, which is useless.</p>
+<p>But there’s a clever workaround. We can use&nbsp;<code>ffmpeg</code>&nbsp;and basically copy the video to&nbsp;<code>/dev/null</code>without
+ reconverting it and count its frames in the process. It’s slower (by a 
+few seconds, usually, depending on size of your video) than&nbsp;<code>ffprobe</code>&nbsp;but it works every time.</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">$ ffmpeg </span><span class="pun">-</span><span class="pln">nostats </span><span class="pun">-</span><span class="pln">i </span><span class="str">"video.mp4"</span> <span class="pun">-</span><span class="pln">vcodec copy </span><span class="pun">-</span><span class="pln">f rawvideo </span><span class="pun">-</span><span class="pln">y </span><span class="pun">/</span><span class="pln">dev</span><span class="pun">/</span><span class="kwd">null</span> <span class="lit">2</span><span class="pun">&gt;&amp;</span><span class="lit">1</span> <span class="pun">|</span><span class="pln"> grep frame </span><span class="pun">|</span><span class="pln"> awk </span><span class="str">'{split($0,a,"fps")}END{print a[1]}'</span> <span class="pun">|</span><span class="pln"> sed </span><span class="str">'s/.*= *//'</span><br>
+</code></li>
+<li class="L1"><code><span class="lit">4061</span></code></li>
+</ol>
+<ul>
+<li><code>-nostats</code>&nbsp;By default,&nbsp;<code>ffmpeg</code>&nbsp;prints progress information, but that would be immediately caught by&nbsp;<code>grep</code>&nbsp;because it would contain the word&nbsp;<code>frame</code>&nbsp;and therefore the output of this entire command would be totally random.&nbsp;<code>-nostats</code>&nbsp;forces&nbsp;<code>ffmpeg</code>&nbsp;to print just the final result.</li>
+<li><code>-i "$MOVIE"</code>&nbsp;Input file.</li>
+<li><code>-vcodec copy -f rawvideo</code>&nbsp;We don’t want to do any reformating. Force&nbsp;<code>ffmpeg</code>&nbsp;to read and write the video as is.</li>
+<li><code>-y /dev/null</code>&nbsp;Dump read video data. We just want it to count frames, we don’t care about the data.</li>
+<li><code>awk ...</code>&nbsp;The line that’s interesting for us might look like&nbsp;<code>frame= 42</code>&nbsp;or&nbsp;<code>frame=325</code>. We can’t just use&nbsp;<code>awk</code>&nbsp;to
+ print the first column because of that extra space, so we have to cut 
+everything from the beginning of the line to the term&nbsp;<code>fps</code>&nbsp;(eg.&nbsp;<code>frame= 152</code>).</li>
+<li><code>sed ...</code>&nbsp;Grab everything after&nbsp;<code>=</code>&nbsp;and ignore any spaces.</li>
+</ul>
+<p>Alright, the [Google Glass teaser video] that I’m using in this tutorial should return&nbsp;<code>4061</code>.
+ That’s the total number of frames in this video. If you’re having 
+problems with this crazy one-liner try removing pipes from the right and
+ see what it returns (first remove&nbsp;<code>sed</code>&nbsp;part, then&nbsp;<code>awk</code>&nbsp;and so on).</p>
+<p>As I mentioned earlier, we want 100 frames and we’re going to use&nbsp;<code>bash</code>&nbsp;to calculate that we want to capture every&nbsp;<code>N</code>th frame.</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">$ echo </span><span class="str">"4061 / 100"</span> <span class="pun">|</span><span class="pln"> bc</span><br>
+</code></li>
+<li class="L1"><code><span class="lit">40</span></code></li>
+</ol>
+<p>This should return&nbsp;<code>40</code>, which means that we will capture every 40th frame (including frame number&nbsp;<code>0</code>).&nbsp;<code>bc</code>&nbsp;is a simple calculator that should come with all Linux distributions (including OS X).</p>
+<h2>3. Generating&nbsp;<code>JPEG</code>&nbsp;preview from a video</h2>
+<p>Generating a preview is just another one-liner where&nbsp;<code>ffmpeg</code>&nbsp;captures images and joins them into a single long film strip.</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">ffmpeg </span><span class="pun">-</span><span class="pln">loglevel panic </span><span class="pun">-</span><span class="pln">y </span><span class="pun">-</span><span class="pln">i </span><span class="str">"video.mp4"</span> <span class="pun">-</span><span class="pln">frames </span><span class="lit">1</span> <span class="pun">-</span><span class="pln">q</span><span class="pun">:</span><span class="pln">v </span><span class="lit">1</span> <span class="pun">-</span><span class="pln">vf </span><span class="str">"select=not(mod(n\,40)),scale=-1:120,tile=100x1"</span><span class="pln"> video_preview</span><span class="pun">.</span><span class="pln">jpg</span></code></li>
+</ol>
+<ul>
+<li><code>-loglevel panic</code>&nbsp;We don’t want to see any output. You can remove this option if you’re having any problems seeing what went wrong.</li>
+<li><code>-i "$MOVIE"</code>&nbsp;The input file.</li>
+<li><code>-y</code>&nbsp;Override any existing output file.</li>
+<li><code>-frames 1</code>&nbsp;Tell&nbsp;<code>ffmpeg</code>&nbsp;that output from this command is just a single image (one frame).</li>
+<li><code>-q:v 1</code>&nbsp;Output quality,&nbsp;<code>0</code>&nbsp;is the best.</li>
+<li><code>-vf select=</code>&nbsp;<strong>That’s where all the magic happens</strong>. This is the selector function for&nbsp;<a href="https://trac.ffmpeg.org/wiki/FilteringGuide" target="_blank" rel="noopener">video filter</a>.
+<ul>
+<li><code>not(mod(n\,40))</code>&nbsp;Select one frame every&nbsp;<code>40</code>&nbsp;frames&nbsp;<a href="https://www.ffmpeg.org/ffmpeg-filters.html#Examples-34" target="_blank" rel="noopener">see the documentation</a>.</li>
+<li><code>scale=-1:120</code>&nbsp;Resize frames to fit&nbsp;<code>120px</code>&nbsp;height, and the width is adjusted automatically to keep the correct aspect ratio.</li>
+<li><code>tile=100x1</code>&nbsp;Layout captured frames into this grid.</li>
+</ul>
+</li>
+</ul>
+<p>We can check what size is&nbsp;<code>video_preview.jpg</code>&nbsp;with&nbsp;<code>identify</code>&nbsp;from&nbsp;<code>ImageMagick</code>:</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">$ identify video_preview</span><span class="pun">.</span><span class="pln">jpg</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">video_preview</span><span class="pun">.</span><span class="pln">jpg JPEG </span><span class="lit">21300x120</span> <span class="lit">21300x120</span><span class="pun">+</span><span class="lit">0</span><span class="pun">+</span><span class="lit">0</span> <span class="lit">8</span><span class="pun">-</span><span class="pln">bit sRGB </span><span class="lit">735KB</span> <span class="lit">0.000u</span> <span class="lit">0</span><span class="pun">:</span><span class="lit">00.000</span></code></li>
+</ol>
+<p>And that’s it. Running all these commands by themselves is a bit 
+clumsy, so we can put them all into a one bash script with variables and
+ command line arguments.</p>
+<ol class="linenums">
+<li class="L0"><code><span class="com">#!/bin/bash</span><br>
+</code></li>
+<li class="L1"><code>&nbsp;</code></li>
+<li class="L2"><code><span class="kwd">if</span> <span class="pun">[</span> <span class="pun">-</span><span class="pln">z </span><span class="str">"$1"</span> <span class="pun">];</span> <span class="kwd">then</span><br>
+</code></li>
+<li class="L3"><code><span class="pln">&nbsp; &nbsp; echo </span><span class="str">"usage: ./movie_preview.sh VIDEO [HEIGHT=120] [COLS=100] [ROWS=1] [OUTPUT]"</span><br>
+</code></li>
+<li class="L4"><code><span class="pln">&nbsp; &nbsp; </span><span class="kwd">exit</span><br>
+</code></li>
+<li class="L5"><code><span class="kwd">fi</span><br>
+</code></li>
+<li class="L6"><code>&nbsp;</code></li>
+<li class="L7"><code><span class="pln">MOVIE</span><span class="pun">=</span><span class="pln">$1</span><br>
+</code></li>
+<li class="L8"><code><span class="pln">HEIGHT</span><span class="pun">=</span><span class="pln">$2</span><br>
+</code></li>
+<li class="L9"><code><span class="pln">COLS</span><span class="pun">=</span><span class="pln">$3</span><br>
+</code></li>
+<li class="L0"><code><span class="pln">ROWS</span><span class="pun">=</span><span class="pln">$4</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">OUT_FILENAME</span><span class="pun">=</span><span class="pln">$5</span><br>
+</code></li>
+<li class="L2"><code>&nbsp;</code></li>
+<li class="L3"><code><span class="com"># get video name without the path and extension</span><br>
+</code></li>
+<li class="L4"><code><span class="pln">MOVIE_NAME</span><span class="pun">=</span><span class="str">`basename $MOVIE`</span><br>
+</code></li>
+<li class="L5"><code><span class="pln">OUT_DIR</span><span class="pun">=</span><span class="str">`pwd`</span><br>
+</code></li>
+<li class="L6"><code>&nbsp;</code></li>
+<li class="L7"><code><span class="kwd">if</span> <span class="pun">[</span> <span class="pun">-</span><span class="pln">z </span><span class="str">"$HEIGHT"</span> <span class="pun">];</span> <span class="kwd">then</span><br>
+</code></li>
+<li class="L8"><code><span class="pln">&nbsp; &nbsp; HEIGHT</span><span class="pun">=</span><span class="lit">120</span><br>
+</code></li>
+<li class="L9"><code><span class="kwd">fi</span><br>
+</code></li>
+<li class="L0"><code><span class="kwd">if</span> <span class="pun">[</span> <span class="pun">-</span><span class="pln">z </span><span class="str">"$COLS"</span> <span class="pun">];</span> <span class="kwd">then</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">&nbsp; &nbsp; COLS</span><span class="pun">=</span><span class="lit">100</span><br>
+</code></li>
+<li class="L2"><code><span class="kwd">fi</span><br>
+</code></li>
+<li class="L3"><code><span class="kwd">if</span> <span class="pun">[</span> <span class="pun">-</span><span class="pln">z </span><span class="str">"$ROWS"</span> <span class="pun">];</span> <span class="kwd">then</span><br>
+</code></li>
+<li class="L4"><code><span class="pln">&nbsp; &nbsp; ROWS</span><span class="pun">=</span><span class="lit">1</span><br>
+</code></li>
+<li class="L5"><code><span class="kwd">fi</span><br>
+</code></li>
+<li class="L6"><code><span class="kwd">if</span> <span class="pun">[</span> <span class="pun">-</span><span class="pln">z </span><span class="str">"$OUT_FILENAME"</span> <span class="pun">];</span> <span class="kwd">then</span><br>
+</code></li>
+<li class="L7"><code><span class="pln">&nbsp; &nbsp; OUT_FILENAME</span><span class="pun">=</span><span class="str">`echo ${MOVIE_NAME%.*}_preview.jpg`</span><br>
+</code></li>
+<li class="L8"><code><span class="kwd">fi</span><br>
+</code></li>
+<li class="L9"><code>&nbsp;</code></li>
+<li class="L0"><code><span class="pln">OUT_FILEPATH</span><span class="pun">=</span><span class="str">`echo $OUT_DIR/$OUT_FILENAME`</span><br>
+</code></li>
+<li class="L1"><code>&nbsp;</code></li>
+<li class="L2"><code><span class="pln">TOTAL_IMAGES</span><span class="pun">=</span><span class="str">`echo "$COLS*$ROWS" | bc`</span><br>
+</code></li>
+<li class="L3"><code>&nbsp;</code></li>
+<li class="L4"><code><span class="com"># get total number of frames in the video</span><br>
+</code></li>
+<li class="L5"><code><span class="com"># ffprobe is fast but not 100% reliable. It might not detect number of frames correctly!</span><br>
+</code></li>
+<li class="L6"><code><span class="pln">NB_FRAMES</span><span class="pun">=</span><span class="str">`ffprobe -show_streams "$MOVIE" 2&gt; /dev/null | grep nb_frames | head -n1 | sed 's/.*=//'`</span><br>
+</code></li>
+<li class="L7"><code>&nbsp;</code></li>
+<li class="L8"><code><span class="kwd">if</span> <span class="pun">[</span> <span class="str">"$NB_FRAMES"</span> <span class="pun">=</span> <span class="str">"N/A"</span> <span class="pun">];</span> <span class="kwd">then</span><br>
+</code></li>
+<li class="L9"><code><span class="pln">&nbsp; &nbsp; </span><span class="com"># as a fallback we'll use ffmpeg. This command basically copies this</span><br>
+</code></li>
+<li class="L0"><code><span class="pln">&nbsp; &nbsp; </span><span class="com"># video to /dev/null and it counts frames in the process.</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">&nbsp; &nbsp; </span><span class="com"># It's slower (few seconds usually) than ffprobe but works everytime.</span><br>
+</code></li>
+<li class="L2"><code><span class="pln">&nbsp; &nbsp; NB_FRAMES</span><span class="pun">=</span><span class="str">`ffmpeg
+ -nostats -i "$MOVIE" -vcodec copy -f rawvideo -y /dev/null 2&gt;&amp;1 |
+ grep frame | awk '{split($0,a,"fps")}END{print a[1]}' | sed 's/.*= 
+*//'`</span><br>
+</code></li>
+<li class="L3"><code><span class="kwd">fi</span><br>
+</code></li>
+<li class="L4"><code>&nbsp;</code></li>
+<li class="L5"><code><span class="com"># calculate offset between two screenshots, drop the floating point part</span><br>
+</code></li>
+<li class="L6"><code><span class="pln">NTH_FRAME</span><span class="pun">=</span><span class="str">`echo "$NB_FRAMES/$TOTAL_IMAGES" | bc`</span><br>
+</code></li>
+<li class="L7"><code><span class="pln">echo </span><span class="str">"capture every ${NTH_FRAME}th frame out of $NB_FRAMES frames"</span><br>
+</code></li>
+<li class="L8"><code>&nbsp;</code></li>
+<li class="L9"><code><span class="com"># make sure output dir exists</span><br>
+</code></li>
+<li class="L0"><code><span class="pln">mkdir </span><span class="pun">-</span><span class="pln">p $OUT_DIR</span><br>
+</code></li>
+<li class="L1"><code>&nbsp;</code></li>
+<li class="L2"><code><span class="pln">FFMPEG_CMD</span><span class="pun">=</span><span class="str">"ffmpeg
+ -loglevel panic -i \"$MOVIE\" -y -frames 1 -q:v 1 -vf 
+\"select=not(mod(n\,$NTH_FRAME)),scale=-1:${HEIGHT},tile=${COLS}x${ROWS}\"
+ \"$OUT_FILEPATH\""</span><br>
+</code></li>
+<li class="L3"><code>&nbsp;</code></li>
+<li class="L4"><code><span class="kwd">eval</span><span class="pln"> $FFMPEG_CMD</span><br>
+</code></li>
+<li class="L5"><code><span class="pln">echo $OUT_FILEPATH</span></code></li>
+</ol>
+<p>More documented code is also available on&nbsp;<a href="https://gist.github.com/martinsik/5237977560ea7d60ad11#file-video_preview-sh" target="_blank" rel="noopener">gist.github.com</a>.</p>
+<p>This script takes up to four arguments. Frame height, number of 
+columns and rows and output file. By default, it generates the same 
+results as we did in this tutorial but you can use it to generate 
+previews like this if you wish.</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">$ </span><span class="pun">./</span><span class="pln">movie_preview</span><span class="pun">.</span><span class="pln">sh video</span><span class="pun">.</span><span class="pln">mp4 </span><span class="lit">40</span> <span class="lit">8</span> <span class="lit">4</span></code></li>
+</ol>
+<p><img class="alignnone size-full wp-image-274" src="FfmpegVideoPreviewsGenerator_files/video_preview.jpg" alt="video_preview" width="568" height="160"></p>
+<p>You can also add padding and margin between images with:</p>
+<ol class="linenums">
+<li class="L0"><code><span class="pln">tile</span><span class="pun">=</span><span class="pln">$</span><span class="pun">{</span><span class="pln">COLS</span><span class="pun">}</span><span class="pln">x$</span><span class="pun">{</span><span class="pln">ROWS</span><span class="pun">}:</span><span class="pln">padding</span><span class="pun">=</span><span class="lit">2</span><span class="pun">:</span><span class="pln">margin</span><span class="pun">=</span><span class="lit">6</span></code></li>
+</ol>
+<p><img class="alignnone size-full wp-image-275" src="FfmpegVideoPreviewsGenerator_files/video-cols-rows.jpg" alt="video-cols-rows" width="448" height="136"></p>
+<h2>4. Embedding video previews on the web</h2>
+<p>I assume we want to use this preview on a website, so we need to wrap
+ it with some HTML, CSS and jQuery. The default frame is set to 1/4 of 
+the video, and when you move your mouse over the preview it moves the 
+background with our film strip.</p>
+<p><a href="http://jsfiddle.net/r6wz0nz6/2/" target="_blank" rel="noopener">You can try live demo here</a>.</p>
+<ol class="linenums">
+<li class="L0"><code><span class="tag">&lt;a</span> <span class="atn">href</span><span class="pun">=</span><span class="atv">"https://www.youtube.com/watch?v=v1uyQZNg2vE"</span> <span class="atn">target</span><span class="pun">=</span><span class="atv">"_blank"</span> <span class="atn">class</span><span class="pun">=</span><span class="atv">"video-preview"</span> <span class="atn">data-frames</span><span class="pun">=</span><span class="atv">"100"</span> <span class="atn">data-source</span><span class="pun">=</span><span class="atv">"http://i.imgur.com/BX0pV4J.jpg"</span><span class="tag">&gt;&lt;/a&gt;</span><br>
+</code></li>
+<li class="L1"><code>&nbsp;</code></li>
+<li class="L2"><code><span class="tag">&lt;style&gt;</span><br>
+</code></li>
+<li class="L3"><code><span class="pln">body </span><span class="pun">{</span><br>
+</code></li>
+<li class="L4"><code><span class="pln">&nbsp; &nbsp; text</span><span class="pun">-</span><span class="pln">align</span><span class="pun">:</span><span class="pln"> center</span><span class="pun">;</span><br>
+</code></li>
+<li class="L5"><code><span class="pln">&nbsp; &nbsp; padding</span><span class="pun">-</span><span class="pln">top</span><span class="pun">:</span> <span class="lit">20px</span><span class="pun">;</span><br>
+</code></li>
+<li class="L6"><code><span class="pun">}</span><br>
+</code></li>
+<li class="L7"><code>&nbsp;</code></li>
+<li class="L8"><code><span class="pun">.</span><span class="pln">video</span><span class="pun">-</span><span class="pln">preview </span><span class="pun">{</span><br>
+</code></li>
+<li class="L9"><code><span class="pln">&nbsp; &nbsp; display</span><span class="pun">:</span> <span class="kwd">inline</span><span class="pun">-</span><span class="pln">block</span><span class="pun">;</span><br>
+</code></li>
+<li class="L0"><code><span class="pln">&nbsp; &nbsp; position</span><span class="pun">:</span><span class="pln"> relative</span><span class="pun">;</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">&nbsp; &nbsp; background</span><span class="pun">:</span> <span class="com">#ddd;</span><br>
+</code></li>
+<li class="L2"><code><span class="pln">&nbsp; &nbsp; overflow</span><span class="pun">:</span><span class="pln"> hidden</span><span class="pun">;</span><br>
+</code></li>
+<li class="L3"><code><span class="pln">&nbsp; &nbsp; </span><span class="com">/* This is temporary width and height, these'll be overriden when the source img is loaded.*/</span><br>
+</code></li>
+<li class="L4"><code><span class="pln">&nbsp; &nbsp; </span><span class="com">/* If you already know size of a preview frame you can hardcode it here. */</span><br>
+</code></li>
+<li class="L5"><code><span class="pln">&nbsp; &nbsp; width</span><span class="pun">:</span> <span class="lit">160px</span><span class="pun">;</span><br>
+</code></li>
+<li class="L6"><code><span class="pln">&nbsp; &nbsp; height</span><span class="pun">:</span> <span class="lit">120px</span><span class="pun">;</span><br>
+</code></li>
+<li class="L7"><code><span class="pln">&nbsp; &nbsp; border</span><span class="pun">-</span><span class="pln">radius</span><span class="pun">:</span> <span class="lit">3px</span><span class="pun">;</span><br>
+</code></li>
+<li class="L8"><code><span class="pln">&nbsp; &nbsp; box</span><span class="pun">-</span><span class="pln">shadow</span><span class="pun">:</span> <span class="lit">0</span> <span class="lit">0</span> <span class="lit">6px</span> <span class="com">#bbb;</span><br>
+</code></li>
+<li class="L9"><code><span class="pun">}</span><br>
+</code></li>
+<li class="L0"><code><span class="tag">&lt;/style&gt;</span><br>
+</code></li>
+<li class="L1"><code>&nbsp;</code></li>
+<li class="L2"><code><span class="tag">&lt;script</span> <span class="atn">src</span><span class="pun">=</span><span class="atv">"https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"</span><span class="tag">&gt;&lt;/script&gt;</span><br>
+</code></li>
+<li class="L3"><code><span class="tag">&lt;script&gt;</span><br>
+</code></li>
+<li class="L4"><code><span class="pun">(</span><span class="kwd">function</span><span class="pun">(</span><span class="pln">$</span><span class="pun">)</span> <span class="pun">{</span><br>
+</code></li>
+<li class="L5"><code><span class="pln">&nbsp; &nbsp; $</span><span class="pun">.</span><span class="pln">fn</span><span class="pun">.</span><span class="pln">videoPreview </span><span class="pun">=</span> <span class="kwd">function</span><span class="pun">(</span><span class="pln">options</span><span class="pun">)</span> <span class="pun">{</span><br>
+</code></li>
+<li class="L6"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="kwd">return</span> <span class="kwd">this</span><span class="pun">.</span><span class="pln">each</span><span class="pun">(</span><span class="kwd">function</span><span class="pun">()</span> <span class="pun">{</span><br>
+</code></li>
+<li class="L7"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="kwd">var</span><span class="pln"> elm </span><span class="pun">=</span><span class="pln"> $</span><span class="pun">(</span><span class="kwd">this</span><span class="pun">);</span><br>
+</code></li>
+<li class="L8"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="kwd">var</span><span class="pln"> frames </span><span class="pun">=</span><span class="pln"> parseFloat</span><span class="pun">(</span><span class="pln">elm</span><span class="pun">.</span><span class="pln">data</span><span class="pun">(</span><span class="str">'frames'</span><span class="pun">));</span><br>
+</code></li>
+<li class="L9"><code>&nbsp;</code></li>
+<li class="L0"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="kwd">var</span><span class="pln"> img </span><span class="pun">=</span><span class="pln"> $</span><span class="pun">(</span><span class="str">'&lt;img/&gt;'</span><span class="pun">,</span> <span class="pun">{</span> <span class="str">'src'</span><span class="pun">:</span><span class="pln"> elm</span><span class="pun">.</span><span class="pln">data</span><span class="pun">(</span><span class="str">'source'</span><span class="pun">)</span> <span class="pun">}).</span><span class="pln">hide</span><span class="pun">().</span><span class="pln">css</span><span class="pun">({</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="str">'position'</span><span class="pun">:</span> <span class="str">'absolute'</span><span class="pun">,</span> <span class="str">'cursor'</span><span class="pun">:</span> <span class="str">'pointer'</span><br>
+</code></li>
+<li class="L2"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="pun">}).</span><span class="pln">appendTo</span><span class="pun">(</span><span class="pln">elm</span><span class="pun">);</span><br>
+</code></li>
+<li class="L3"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="kwd">var</span><span class="pln"> slider </span><span class="pun">=</span><span class="pln"> $</span><span class="pun">(</span><span class="str">'&lt;div/&gt;'</span><span class="pun">).</span><span class="pln">hide</span><span class="pun">().</span><span class="pln">css</span><span class="pun">({</span><br>
+</code></li>
+<li class="L4"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="str">'width'</span><span class="pun">:</span> <span class="str">'2px'</span><span class="pun">,</span> <span class="str">'height'</span><span class="pun">:</span> <span class="str">'100%'</span><span class="pun">,</span> <span class="str">'background'</span><span class="pun">:</span> <span class="str">'#ddd'</span><span class="pun">,</span> <span class="str">'position'</span><span class="pun">:</span> <span class="str">'absolute'</span><span class="pun">,</span><br>
+</code></li>
+<li class="L5"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="str">'z-index'</span><span class="pun">:</span> <span class="str">'1'</span><span class="pun">,</span> <span class="str">'top'</span><span class="pun">:</span> <span class="str">'0'</span><span class="pun">,</span> <span class="str">'opacity'</span><span class="pun">:</span> <span class="lit">0.6</span><span class="pun">,</span> <span class="str">'cursor'</span><span class="pun">:</span> <span class="str">'pointer'</span><br>
+</code></li>
+<li class="L6"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="pun">}).</span><span class="pln">appendTo</span><span class="pun">(</span><span class="pln">elm</span><span class="pun">);</span><br>
+</code></li>
+<li class="L7"><code>&nbsp;</code></li>
+<li class="L8"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="kwd">var</span><span class="pln"> width</span><span class="pun">;</span><br>
+</code></li>
+<li class="L9"><code>&nbsp;</code></li>
+<li class="L0"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="kwd">function</span><span class="pln"> defaultPos</span><span class="pun">()</span> <span class="pun">{</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; img</span><span class="pun">.</span><span class="pln">css</span><span class="pun">(</span><span class="str">'left'</span><span class="pun">,</span> <span class="pun">-</span><span class="pln">width </span><span class="pun">*</span><span class="pln"> frames </span><span class="pun">/</span> <span class="lit">4</span><span class="pun">);</span><br>
+</code></li>
+<li class="L2"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="pun">}</span><br>
+</code></li>
+<li class="L3"><code>&nbsp;</code></li>
+<li class="L4"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; img</span><span class="pun">.</span><span class="pln">load</span><span class="pun">(</span><span class="kwd">function</span><span class="pun">()</span> <span class="pun">{</span> <span class="com">// we need to know video's full width</span><br>
+</code></li>
+<li class="L5"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; $</span><span class="pun">(</span><span class="kwd">this</span><span class="pun">).</span><span class="pln">show</span><span class="pun">();</span><br>
+</code></li>
+<li class="L6"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; width </span><span class="pun">=</span> <span class="kwd">this</span><span class="pun">.</span><span class="pln">width </span><span class="pun">/</span><span class="pln"> frames</span><span class="pun">;</span><br>
+</code></li>
+<li class="L7"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; elm</span><span class="pun">.</span><span class="pln">css</span><span class="pun">(</span><span class="str">'width'</span><span class="pun">,</span><span class="pln"> width</span><span class="pun">);</span><br>
+</code></li>
+<li class="L8"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; defaultPos</span><span class="pun">();</span><br>
+</code></li>
+<li class="L9"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="pun">});</span><br>
+</code></li>
+<li class="L0"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; elm</span><span class="pun">.</span><span class="pln">mousemove</span><span class="pun">(</span><span class="kwd">function</span><span class="pun">(</span><span class="pln">e</span><span class="pun">)</span> <span class="pun">{</span><br>
+</code></li>
+<li class="L1"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="kwd">var</span><span class="pln"> left </span><span class="pun">=</span><span class="pln"> e</span><span class="pun">.</span><span class="pln">clientX </span><span class="pun">-</span><span class="pln"> elm</span><span class="pun">.</span><span class="pln">position</span><span class="pun">().</span><span class="pln">left</span><span class="pun">;</span> <span class="com">// position inside the wrapper</span><br>
+</code></li>
+<li class="L2"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; slider</span><span class="pun">.</span><span class="pln">show</span><span class="pun">().</span><span class="pln">css</span><span class="pun">(</span><span class="str">'left'</span><span class="pun">,</span><span class="pln"> left </span><span class="pun">-</span> <span class="lit">1</span><span class="pun">);</span> <span class="com">// -1 because it's 2px width</span><br>
+</code></li>
+<li class="L3"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; img</span><span class="pun">.</span><span class="pln">css</span><span class="pun">(</span><span class="str">'left'</span><span class="pun">,</span> <span class="pun">-</span><span class="typ">Math</span><span class="pun">.</span><span class="pln">floor</span><span class="pun">((</span><span class="pln">left </span><span class="pun">/</span><span class="pln"> width</span><span class="pun">)</span> <span class="pun">*</span><span class="pln"> frames</span><span class="pun">)</span> <span class="pun">*</span><span class="pln"> width</span><span class="pun">);</span><br>
+</code></li>
+<li class="L4"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="pun">}).</span><span class="pln">mouseout</span><span class="pun">(</span><span class="kwd">function</span><span class="pun">(</span><span class="pln">e</span><span class="pun">)</span> <span class="pun">{</span><br>
+</code></li>
+<li class="L5"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; slider</span><span class="pun">.</span><span class="pln">hide</span><span class="pun">();</span><br>
+</code></li>
+<li class="L6"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; defaultPos</span><span class="pun">();</span><br>
+</code></li>
+<li class="L7"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span class="pun">});</span><br>
+</code></li>
+<li class="L8"><code>&nbsp;</code></li>
+<li class="L9"><code><span class="pln">&nbsp; &nbsp; &nbsp; &nbsp; </span><span class="pun">});</span><br>
+</code></li>
+<li class="L0"><code><span class="pln">&nbsp; &nbsp; </span><span class="pun">};</span><br>
+</code></li>
+<li class="L1"><code><span class="pun">})(</span><span class="pln">jQuery</span><span class="pun">);</span><br>
+</code></li>
+<li class="L2"><code>&nbsp;</code></li>
+<li class="L3"><code><span class="pln">$</span><span class="pun">(</span><span class="str">'.video-preview'</span><span class="pun">).</span><span class="pln">videoPreview</span><span class="pun">();</span><br>
+</code></li>
+<li class="L4"><code><span class="tag">&lt;/script&gt;</span></code></li>
+</ol>
+<h2>What about GIF animations?</h2>
+<p>You can generate GIF animations directly from&nbsp;<code>ffmpeg,</code>&nbsp;but it usually doesn’t give very good results because of some predefined color palette used by&nbsp;<code>ffmpeg</code>.</p>
+<p>Therefore, it requires a two step process where you first output all video frames into a&nbsp;<code>.png</code>&nbsp;file and then create animation using&nbsp;<code>convert</code>&nbsp;from the&nbsp;<code>ImageMagick</code>&nbsp;suite. In fact, that’s how I made the animation at the beginning of this tutorial.</p>
+<p>You can read more and see examples&nbsp;<a href="http://superuser.com/a/556031/69799" target="_blank" rel="noopener">here</a>.</p>
+<p>Also note, that GIF animation with the same number of frames like our JPEG film strip will be significantly larger (a few MBs).</p>
+<p>I hope this tutorial helped you generate better previews! If you have
+ any questions or something you’d like to mention, drop me a line in the
+ comments!</p>
+<p><em>Author:&nbsp;Martin Sikora</em></p>
+</div>
+</div>
+</article>
+<div id="scrolltop" style="position: fixed; opacity: 0; cursor: pointer;" title="Scroll Back to Top"></div></div>
+
+<div id="footer">
+<div id="footer-info" class="container">
+<div id="footer-site">
+© Copyright 2019 - binPress.com
+</div>
+<div id="footer-nav">
+<div class="menu-footer-menu-container"><ul id="menu-footer-menu" class="menu"><li id="menu-item-16" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-16"><a href="https://www.binpress.com/about/">About</a></li>
+<li id="menu-item-14" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-14"><a href="https://www.binpress.com/contact/">Contact</a></li>
+<li id="menu-item-66" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-66"><a href="https://www.binpress.com/write-for-us/">Write for Us</a></li>
+<li id="menu-item-13" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-13"><a href="https://www.binpress.com/terms-of-use/">Terms of Use</a></li>
+<li id="menu-item-15" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-15"><a href="https://www.binpress.com/privacy-policy/">Privacy Policy</a></li>
+</ul></div>            </div>
+</div>
+</div>
+<script type="text/javascript">
+/* <![CDATA[ */
+var wpcf7 = {"apiSettings":{"root":"https:\/\/www.binpress.com\/wp-json\/contact-form-7\/v1","namespace":"contact-form-7\/v1"}};
+/* ]]> */
+</script>
+<script type="text/javascript" src="FfmpegVideoPreviewsGenerator_files/scripts.js"></script>
+<script type="text/javascript">
+/* <![CDATA[ */
+var thirsty_global_vars = {"home_url":"\/\/www.binpress.com","ajax_url":"https:\/\/www.binpress.com\/wp-admin\/admin-ajax.php","link_fixer_enabled":"yes","link_prefix":"go","link_prefixes":["recommends","go"],"post_id":"271","enable_record_stats":"yes","enable_js_redirect":"yes","disable_thirstylink_class":""};
+/* ]]> */
+</script>
+<script type="text/javascript" src="FfmpegVideoPreviewsGenerator_files/ta.js"></script>
+<script type="text/javascript" src="FfmpegVideoPreviewsGenerator_files/api.js"></script>
+<script type="text/javascript" src="FfmpegVideoPreviewsGenerator_files/jquery.js"></script>
+<script type="text/javascript" src="FfmpegVideoPreviewsGenerator_files/theme.js"></script>
+<script type="text/javascript" src="FfmpegVideoPreviewsGenerator_files/wp-embed.js"></script>
+<script type="text/javascript">
+( function( grecaptcha, sitekey ) {
+var wpcf7recaptcha = {
+execute: function() {
+grecaptcha.execute(
+sitekey,
+{ action: 'homepage' }
+).then( function( token ) {
+var forms = document.getElementsByTagName( 'form' );
+for ( var i = 0; i < forms.length; i++ ) {
+var fields = forms[ i ].getElementsByTagName( 'input' );
+for ( var j = 0; j < fields.length; j++ ) {
+var field = fields[ j ];
+if ( 'g-recaptcha-response' === field.getAttribute( 'name' ) ) {
+field.setAttribute( 'value', token );
+break;
+}
+}
+}
+} );
+}
+};
+grecaptcha.ready( wpcf7recaptcha.execute );
+document.addEventListener( 'wpcf7submit', wpcf7recaptcha.execute, false );
+} )( grecaptcha, '6LcyF4MUAAAAAAlDd8CFV40yMZ6_KBlQm8jpLJta' );
+</script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async="" src="FfmpegVideoPreviewsGenerator_files/js.js"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'UA-121855636-3');
+</script>
+<!-- Statcounter code for binPress https://www.binpress.com/
+on WordPress.org -->
+<script type="text/javascript">
+var sc_project=11818871;
+var sc_invisible=1;
+var sc_security="f9bc61d2";
+</script>
+<script type="text/javascript" src="FfmpegVideoPreviewsGenerator_files/counter.js" async=""></script>
+<noscript><div class="statcounter"><img class="statcounter"
+src="//c.statcounter.com/11818871/0/f9bc61d2/1/"
+alt="binpress"></div></noscript>
+<!-- End of Statcounter Code -->
+<div id="fixed"><span id="ftc" class="fix"><a href="https://www.binpress.com/disclosure/"><strong>Disclosure:</strong> We are compensated by some of the companies listed on this website.</a></span></div>
+<script>document.getElementById('ftc').innerHTML += '<a href="https://www.binpress.com/disclosure/"><strong>Disclosure:</strong> We are compensated by some of the companies listed on this website.</a>';</script>
+<!-- Begin Cookie Consent plugin by Silktide - http://silktide.com/cookieconsent -->
+<script type="text/javascript">
+window.cookieconsent_options = {"message":"We use cookies to ensure you get the best experience on our website.","dismiss":"Ok!","learnMore":"Read more ...","link":"https://binpress.com/privacy-policy/","theme":"dark-floating"};
+</script>
+<script type="text/javascript" src="FfmpegVideoPreviewsGenerator_files/cookieconsent.js"></script>
+<!-- End Cookie Consent plugin -->
+
+<div><div class="grecaptcha-badge" data-style="bottomright" style="width: 256px; height: 60px; transition: right 0.3s ease 0s; position: fixed; bottom: 14px; right: -186px; box-shadow: gray 0px 0px 5px;"><div class="grecaptcha-logo"><iframe src="FfmpegVideoPreviewsGenerator_files/anchor.html" role="presentation" name="a-ixp96k8xii9w" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" width="256" height="60" frameborder="0"></iframe></div><div class="grecaptcha-error"></div><textarea id="g-recaptcha-response-100000" name="g-recaptcha-response" class="g-recaptcha-response" style="width: 250px; height: 40px; border: 1px solid rgb(193, 193, 193); margin: 10px 25px; padding: 0px; resize: none; display: none;">03AOLTBLRvjCsna4nLMWj6o8gOMS-2ZkWuzhNWvEYbhQIM7moh__TmzkvzSZKFKy3fnOEmS2VDzeNE1oj_NRu4NyUJTLsTAL6RjP0_CjZ7Pfw_pO8bmYQ0gA8LYlwz_y5f_UXNzjtkB4SkTi6ZLPDpdgoda2NnSWeeYM8QCWSVFBejMV1LUIeON4wKF1tLlthL2iw0OzuoAxQqCk9MqKvKOSCKpNI64ExQ3tyht0227_nTgy2AXQSZPKvXL3Emwms4pkECY5garv2VEp_AfvMtj7zS7NqJ1igwLJueQXF-m867Y96X441TTCk7v5Oxk3VkNHITBUlBiS5h</textarea></div></div></body></html>
+<!-- WP Fastest Cache file was created in 0.528117895126 seconds, on 20-03-19 15:23:15 -->
