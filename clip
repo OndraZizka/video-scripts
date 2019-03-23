@@ -12,16 +12,16 @@ if [ "$#" -lt 3 ] ; then echo "Expecting input file, start <mm:ss>, duration <mm
 START=$2
 STOP=$3
 
-case START in 
-    *:*:*) START= "00:$START" ;;
-    *:*)   START= "00:$START" ;;
-    *)     START= "00:00:$START" ;;
+case "$START" in
+    *:*:*) START="$START" ;;
+    *:*)   START="00:$START" ;;
+    *)     START="00:00:$START" ;;
 esac
 
-case STOP in 
-    *:*:*) STOP= "00:$STOP" ;;
-    *:*)   STOP= "00:$STOP" ;;
-    *)     STOP= "00:00:$STOP" ;;
+case "$STOP" in
+    *:*:*) STOP="$STOP" ;;
+    *:*)   STOP="00:$STOP" ;;
+    *)     STOP="00:00:$STOP" ;;
 esac
 
 DURATION=`countTimeDiff2 "$START" "$STOP"`;

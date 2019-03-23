@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 . ~/sc/vid/_common.lib.sh
 
@@ -7,22 +8,37 @@ BASE_NAME=`basename "$INPUT"`
 BASE_NAME="${BASE_NAME%.*}"
 SUFFIX=${INPUT##*.}
 
-if [ "$#" < 3 ] ; then echo "Expecting input file, start <mm:ss>, duration <mm:ss>."; exit; fi
-START=$2
-STOP=$3
-#DURATION=`countTimeDiff2 "$START" "$STOP"`;
+if [[ ! -f "$1" ]] ; then
+    echo "$1 is not a file."; exit;
+fi
 
-NEW_NAME="$BASE_NAME"-mute-${START//:/.}-${STOP//:/.}.$SUFFIX
+if [ "$2" == "whole" ] ; then
+    NEW_NAME="$BASE_NAME"-mute.$SUFFIX
+    CODEC="-c:v copy -an"
+else 
+    if [ "$#" -ne 3 ] ; then
+        echo "Usage:";
+        echo "       $0 <inputFile> <start mm:ss> <duration mm:ss>";
+        echo "       $0 <inputFile> whole";
+        exit;
+    fi
 
-#CODEC="-c:v copy -af afade=t=out:curve=hsin:st=$START:duration=$DURATION"
+    START=$2
+    STOP=$3
+    #DURATION=`countTimeDiff2 "$START" "$STOP"`;
 
-## Fade volume after time 10 with an annihilation period of 5 seconds:
-#volume='if(lt(t,10),1,max(1-(t-10)/5,0))':eval=frame
-CODEC="-c:v copy -af volume='if(lt(t,$START),1,if(lt(t,$STOP),0,1))':eval=frame"
+    NEW_NAME="$BASE_NAME"-mute-${START//:/.}-${STOP//:/.}.$SUFFIX
 
+    #CODEC="-c:v copy -af afade=t=out:curve=hsin:st=$START:duration=$DURATION"
+
+    ## Fade volume after time 10 with an annihilation period of 5 seconds:
+    #volume='if(lt(t,10),1,max(1-(t-10)/5,0))':eval=frame
+    CODEC="-c:v copy -af volume='if(lt(t,$START),1,if(lt(t,$STOP),0,1))':eval=frame"
+fi
 
 set -x
 ffmpeg -i "$INPUT" $CODEC "$NEW_NAME"
 set +x
 
 touch "$NEW_NAME" -r "$INPUT"
+

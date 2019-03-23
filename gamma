@@ -1,6 +1,7 @@
 #!/bin/bash
+set -e
 
-. _common.lib.sh  # $BEST_VIDEO
+#. _common.lib.sh  # $BEST_VIDEO
 
 INPUT=$1
 BASE_NAME=`basename "$INPUT"`
@@ -11,22 +12,15 @@ NEW_NAME="$BASE_NAME"-gamma.$SUFFIX
 GAMMA=$2
 CONTRAST=$3
 
-if [[ "$GAMMA"    =~ ^[0-9]+(\.[0-9]+)?$ ]] ; then echo; else echo "Expecting params: file, gamma, contrast [, preview]"; exit; fi;
-if [[ "$CONTRAST" =~ ^[0-9]+(\.[0-9]+)?$ ]] ; then echo; else echo "Expecting params: file, gamma, contrast [, preview]"; exit; fi;
-if [ "" != "$4" ] ; then FF=ffplay; NEW_NAME=""; else FF=ffmpeg; fi
+if [[ "$GAMMA"    =~ ^[0-9]+(\.[0-9]+)?$ ]] ; then echo; else echo "Usage: $0 <file> <gamma> <contrast> [<proceed>]"; exit; fi;
+if [[ "$CONTRAST" =~ ^[0-9]+(\.[0-9]+)?$ ]] ; then echo; else echo "Usage: $0 <file> <gamma> <contrast> [<proceed>]"; exit; fi;
+if [ "" == "$4" ] ; then FF=ffplay; NEW_NAME="-hide_banner"; else FF=ffmpeg; fi
+## Passing -hide_banner this way is a hack.
 
 
 set -x
-$FF -i "$INPUT" -vf eq=gamma=$GAMMA:contrast=$CONTRAST $NEW_NAME  ## :opencl=1
-##  Expressions don't work here
-##ffmpeg -i "$INPUT" -vf deshake=rx=(iw/124):ry=(iw/124) -strict -2 "$NEW_NAME"
-
-#transcode -J stabilize -i "$INPUT" -y null,null -o dummy
-#transcode -J transform -i "$INPUT" -y xvid,null -o "$NEW_NAME"
+$FF -i "$INPUT" -vf eq=gamma=$GAMMA:contrast=$CONTRAST "$NEW_NAME"
+if [ "$FF" == "ffmpeg" ] ; then touch "$NEW_NAME" -r "$INPUT"; fi
+## :opencl=1
 set +x
 
-touch "$NEW_NAME" -r "$INPUT"
-
-
-## Multi:
-#find . -name '*.mp4' -not -name  '*deshake.*' -print0 | xargs -0 -n 1 ~/sc/vid/deshake
