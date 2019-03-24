@@ -35,7 +35,8 @@ else
 fi
 
 set -x
-ffmpeg -i "$INPUT" -ss "$START".0 $CODEC -t "$DURATION".0 "$NEW_NAME"
+KEY_FRAMES="-force_key_frames 00:00:00.000"
+ffmpeg -i "$INPUT" -ss "$START".0 $CODEC -t "$DURATION".0  "$NEW_NAME"
 set +x
 
 touch "$NEW_NAME" -r "$INPUT"
