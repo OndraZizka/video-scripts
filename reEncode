@@ -15,11 +15,13 @@ INPUT=$1
 SUFFIX=$2
 BASE_NAME=`basename "$INPUT"`
 BASE_NAME="${BASE_NAME%.*}"
-SUFFIX_ORIG=${INPUT##*.}
-echo "\"$SUFFIX_ORIG\" == \"mkv\" -a \"mkv\" != \"$SUFFIX\""
-if [ "$SUFFIX" == "mkv" -a "mkv" != "$SUFFIX_ORIG" ] ; then echo "WARNING: The target format is MKV. Run '$0 $1 mkv' to confirm."; exit; fi
+SUFFIX_ORIG=`echo "${INPUT##*.}" | tr '[:upper:]' '[:lower:]' `
+echo "SUFFIX_ORIG: $SUFFIX_ORIG   SUFFIX: $SUFFIX"
+if [ "$SUFFIX_ORIG" == "mkv"  -a "$SUFFIX" == "" ] ; then echo "WARNING: The default target format is same as source - MKV. Run '$0 $1 mkv' to confirm."; exit 2; fi
+if [ "$SUFFIX_ORIG" == "webm" -a "$SUFFIX" == "" ] ; then echo "WARNING: The default target format is same as source - WEBM. Run '$0 $1 webm' to confirm."; exit 2; fi
 
 SUFFIX=${SUFFIX:=$SUFFIX_ORIG}
+#SUFFIX=${SUFFIX:='mp4'}
 NEW_NAME="$BASE_NAME"-reEnc.$SUFFIX
 
 
@@ -33,6 +35,7 @@ set -x
 ## setpts=N/FRAME_RATE/TB                   with mpdecimate - controls how the time for missing frames is spread to other frames. Doesn't work for MOV / MP4?
 #QUALITY="$BEST_VIDEO"
 #fmpeg -y -hide_banner -i "$INPUT" -bt 50M -vf "mpdecimate,setpts=N/FRAME_RATE/TB" -strict -2 $QUALITY -pix_fmt yuv420p -movflags "+faststart" "$NEW_NAME"
+# Key frames rate: -x264-params keyint=120:scenecut=0
 ffmpeg -y -hide_banner -i "$INPUT" -strict experimental $QUALITY -movflags "+faststart" "$NEW_NAME"
 set +x
 
