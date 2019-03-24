@@ -30,11 +30,11 @@ if [ '-' == "$1" ] ; then
 else
   INPUTS_DIR="$1"
   ## We will search for the inputs and pick randomly.
-  COLS=${2:-2}
-  ROWS=${3:-2}
+  COLS=${2:-6}
+  ROWS=${3:-5}
   INPUT_COUNT=$((COLS * ROWS))
   INPUTS=`find $INPUTS_DIR \( -iname '*.mp4' -o -iname '*.avi' -o -iname '*.mkv' -o -iname '*.webm' -o -iname '*.mov' \) \
-            ! -name '*-clip*' -a ! -name '*-crop*' -a ! -name '*-mute*' -a ! -iname '*zivot*' -a -size +200M \
+            ! -name '*-clip*' -a ! -name '*-crop*' -a ! -name '*-mute*' -a ! -iname '*zivot*' -a ! -iname '*-0.*' -a ! -iname '*-0-*' -a -size +1600M -a -size +2400M \
             | shuf | head -n $INPUT_COUNT | xargs  -r -l -I {}  echo "     -i '{}' \\\\"`
 fi
 ## Now we should have: INPUTS, COLS, ROWS, INPUT_COUNT.
@@ -51,6 +51,8 @@ for ROW in `seq 1 1 $ROWS` ; do
     TILE_ID="TILE_${ROW}_${COL}"
     STREAMS="$STREAMS          [$I:v] setpts=PTS-STARTPTS, scale=${TILE_WID}x${TILE_HEI} [$TILE_ID]; $NL"
     OVERLAYS="$OVERLAYS          [lay$I][$TILE_ID] overlay=shortest=1:x=$X:y=$Y"
+    XSTACK_SOURCES="$XSTACK_SOURCES[$TILE_ID]"
+    XSTACK_LAYOUT="$XSTACK_LAYOUT|${X}_${Y}"
     ((I++))
     if [ $I != $INPUT_COUNT ] ; then OVERLAYS="$OVERLAYS [lay$I]; $NL"; fi
     ((X += TILE_WID))
@@ -59,6 +61,7 @@ for ROW in `seq 1 1 $ROWS` ; do
 done
 
 SIZE=$((TILE_WID*COLS))x$((TILE_HEI*ROWS));
+XSTACK_LAYOUT="`echo $XSTACK_LAYOUT | sed 's#^|##'`";
 
 echo "ffmpeg \\
 $INPUTS
@@ -69,3 +72,16 @@ $OVERLAYS\
      -c:v libx264 ./tiled.mp4
   ";
 
+echo "${XSTACK_SOURCES}xstack=inputs=$INPUT_COUNT:layout=$XSTACK_LAYOUT"
+
+  
+<<EOF
+##  xstack way:   See https://ffmpeg.org/ffmpeg-filters.html#xstack
+ffmpeg -i input0 -i input1 -i input2 -i input3 -filter_complex
+"[0]drawtext=text='vid0':fontsize=20:x=(w-text_w)/2:y=(h-text_h)/2[v0];
+ [1]drawtext=text='vid1':fontsize=20:x=(w-text_w)/2:y=(h-text_h)/2[v1];
+ [2]drawtext=text='vid2':fontsize=20:x=(w-text_w)/2:y=(h-text_h)/2[v2];
+ [3]drawtext=text='vid3':fontsize=20:x=(w-text_w)/2:y=(h-text_h)/2[v3];
+ [v0][v1][v2][v3]xstack=inputs=4:layout=0_0|w0_0|0_h0|w0_h0[v]"
+-map "[v]" output
+EOF
