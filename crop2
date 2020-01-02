@@ -28,7 +28,7 @@ NEW_NAME="$BASE_NAME-#$TOP,$RIGHT,$BOTTOM,$LEFT.$SUFFIX";
 FILTER="crop=in_w*(1-$LEFT-$RIGHT):in_h*(1-$TOP-$BOTTOM):in_w*$LEFT:in_h*$TOP";
 
 set -x
-if [ "$6" != "" ] ; then
+if [ "$6" == "" ] ; then
   ffplay -i "$INPUT" -vf "$FILTER"
 else
   ffmpeg -i "$INPUT" -filter:v "$FILTER" $BEST_VIDEO_ -c:a copy "$NEW_NAME"
