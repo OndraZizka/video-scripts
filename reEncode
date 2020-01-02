@@ -10,6 +10,8 @@
 SCRIPT_DIR=$(dirname $(realpath $0))
 . "$SCRIPT_DIR/_common.lib.sh"  # $BEST_VIDEO
 
+FFMPEG='/home/ondra/sw/ffmpeg-4.1.3-amd64-static/ffmpeg'  #ffmpeg
+
 
 INPUT=$1
 SUFFIX=$2
@@ -34,9 +36,9 @@ set -x
 ## mpdecimate                               Removes similar frames. May shorten play time for MOV or MP4 envelope. 
 ## setpts=N/FRAME_RATE/TB                   with mpdecimate - controls how the time for missing frames is spread to other frames. Doesn't work for MOV / MP4?
 #QUALITY="$BEST_VIDEO"
-#fmpeg -y -hide_banner -i "$INPUT" -bt 50M -vf "mpdecimate,setpts=N/FRAME_RATE/TB" -strict -2 $QUALITY -pix_fmt yuv420p -movflags "+faststart" "$NEW_NAME"
+#$FFMPEG -y -hide_banner -i "$INPUT" -bt 50M -vf "mpdecimate,setpts=N/FRAME_RATE/TB" -strict -2 $QUALITY -pix_fmt yuv420p -movflags "+faststart" "$NEW_NAME"
 # Key frames rate: -x264-params keyint=120:scenecut=0
-ffmpeg -y -hide_banner -i "$INPUT" -strict experimental $QUALITY -movflags "+faststart" "$NEW_NAME"
+$FFMPEG -y -hide_banner -i "$INPUT" -strict experimental $QUALITY -movflags "+faststart" "$NEW_NAME"
 set +x
 
 touch "$NEW_NAME" -r "$INPUT"
