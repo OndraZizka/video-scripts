@@ -7,8 +7,11 @@
 
 ## Either processes the files in 
 
-TILE_WID=480
-TILE_HEI=270
+TILE_WID=480; TILE_HEI=270
+## My UWQHD = 3440 x 1440
+TILE_WID=512; TILE_HEI=288  ## Fits 6 x 5
+TILE_WID=416; TILE_HEI=234  ## 16:9 * 26; fits 8 x 6
+
 
 
 if [ ! -d "$1" -a '-' != "$1" ] ; then 
@@ -29,12 +32,15 @@ if [ '-' == "$1" ] ; then
   ROWS=$SQRT
 else
   INPUTS_DIR="$1"
-  ## We will search for the inputs and pick randomly.
+  ## We will search for the inputs and pick randomly. This part is tailored to me, should be externalized.
   COLS=${2:-6}
   ROWS=${3:-5}
   INPUT_COUNT=$((COLS * ROWS))
   INPUTS=`find $INPUTS_DIR \( -iname '*.mp4' -o -iname '*.avi' -o -iname '*.mkv' -o -iname '*.webm' -o -iname '*.mov' \) \
-            ! -name '*-clip*' -a ! -name '*-crop*' -a ! -name '*-mute*' -a ! -iname '*zivot*' -a ! -iname '*-0.*' -a ! -iname '*-0-*' -a -size +1600M -a -size +2400M \
+            ! -name '*-clip*' -a ! -name '*-crop*' -a ! -name '*-mute*' -a ! -iname '*zivot*' \
+            -a ! -name '*-0.*' -a ! -name '*-0-*' \
+            -a ! -name '*-1.*' -a ! -name '*-1-*' \
+            -a -size +2000M -a -size -3000M \
             | shuf | head -n $INPUT_COUNT | xargs  -r -l -I {}  echo "     -i '{}' \\\\"`
 fi
 ## Now we should have: INPUTS, COLS, ROWS, INPUT_COUNT.
@@ -65,15 +71,14 @@ XSTACK_LAYOUT="`echo $XSTACK_LAYOUT | sed 's#^|##'`";
 
 echo "ffmpeg \\
 $INPUTS
-    -filter_complex \"nullsrc=size=$SIZE [lay0];
+    -filter_complex \"
 $STREAMS\
-$OVERLAYS\
-     \" \
+    ${XSTACK_SOURCES}xstack=inputs=$INPUT_COUNT:layout=$XSTACK_LAYOUT\
+    \" \
      -c:v libx264 ./tiled.mp4
   ";
 
-echo "${XSTACK_SOURCES}xstack=inputs=$INPUT_COUNT:layout=$XSTACK_LAYOUT"
-
+## $OVERLAYS was replaced with the xstack line.
   
 <<EOF
 ##  xstack way:   See https://ffmpeg.org/ffmpeg-filters.html#xstack
