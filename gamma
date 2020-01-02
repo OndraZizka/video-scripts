@@ -7,13 +7,16 @@ INPUT=$1
 BASE_NAME=`basename "$INPUT"`
 BASE_NAME="${BASE_NAME%.*}"
 SUFFIX=${INPUT##*.}
-NEW_NAME="$BASE_NAME"-gamma.$SUFFIX
 
 GAMMA=$2
 CONTRAST=$3
 
 if [[ "$GAMMA"    =~ ^[0-9]+(\.[0-9]+)?$ ]] ; then echo; else echo "Usage: $0 <file> <gamma> <contrast> [<proceed>]"; exit; fi;
 if [[ "$CONTRAST" =~ ^[0-9]+(\.[0-9]+)?$ ]] ; then echo; else echo "Usage: $0 <file> <gamma> <contrast> [<proceed>]"; exit; fi;
+
+NEW_NAME="$BASE_NAME"-gm$GAMMA+ctr$CONTRAST.$SUFFIX
+
+
 if [ "" == "$4" ] ; then FF=ffplay; NEW_NAME="-hide_banner"; else FF=ffmpeg; fi
 ## Passing -hide_banner this way is a hack.
 
