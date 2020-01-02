@@ -16,7 +16,15 @@ BASE_NAME=`basename "$VIDEO_FILE"`
 BASE_NAME="${BASE_NAME%.*}"
 SUFFIX=${VIDEO_FILE##*.}
 
-if [ "$#" -lt 2 ] ; then echo -e "\nExpecting input video file and input text file with times to split and concat - '[m]m:ss [m]m:ss\\\\n' per part.\n"; exit; fi
+if [ "$#" -lt 2 ] ; then 
+    echo -e "  Usage:\n";
+    echo -e "    $0 <videoPath> <timesFilePath>";
+    echo -e " Expecting input <videoPath> and input <timesFilePath> with times to split and concat '[m]m:ss [m]m:ss\\\\n' per part.\n"; 
+    echo -e "    <timesFilePath> format: One line per video part: "
+    echo -e "       '[m]m:ss [m]m:ss\\\\n' per part.\n";
+    exit 1;
+fi
+    
 
 echo -e "\n\n   Splitting $VIDEO_FILE as per $TIMES_FILE\n\n";
 rm -rf tmpVideoSplit
@@ -47,8 +55,8 @@ cd ..
 NEW_NAME="$BASE_NAME"-splitConcat.$SUFFIX
 
 #find tmpVideoSplit/ -maxdepth 1 -type f -iname '*.mp4' -o -iname '*.mov' -o -iname '*.avi' -exec echo file \'{}\' \; > tmpVideoSplit/.list.txt 
-find tmpVideoSplit/ -maxdepth 1 -type f -not -iname '*.txt' -exec echo {} \; > tmpVideoSplit/list.txt 
-~/sc/vid/concat tmpVideoSplit/list.txt # "$VIDEO_FILE"
+find tmpVideoSplit/ -maxdepth 1 -type f -not -iname '*.txt' -exec echo {} \; | sort > tmpVideoSplit/list.txt 
+~/sc/vid/concat tmpVideoSplit/list.txt "$NEW_NAME" #"${VIDEO_FILE}-concat"
 
 
 touch "$NEW_NAME" -r "$VIDEO_FILE"
