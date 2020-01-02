@@ -91,6 +91,7 @@ FFMPEG_CMD="ffmpeg -loglevel panic -i \"$MOVIE\" -y -frames 1 -q:v 1 -vf \"selec
 # print enire command for debugging purposes
 # echo $FFMPEG_CMD
 
-echo "$OUT_FILEPATH"
+echo "`date +%R` $OUT_FILEPATH"
+
 
 eval $FFMPEG_CMD
