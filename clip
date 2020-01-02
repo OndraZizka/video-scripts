@@ -8,9 +8,16 @@ BASE_NAME=`basename "$INPUT"`
 BASE_NAME="${BASE_NAME%.*}"
 SUFFIX=${INPUT##*.}
 
-if [ "$#" -lt 3 ] ; then echo "Expecting input file, start <mm:ss>, duration <mm:ss>."; exit; fi
-START=$2
-STOP=$3
+if [ "$#" -lt 3 ] ; then echo "Expecting: input_file, start <mm:ss>, stop <mm:ss>."; exit; fi
+START=$(echo "$2" | tr '.' ':')
+STOP=$(echo "$3" | tr '.' ':')
+
+## Split a number to hh:mm:ss, i.e. 12345 -> 01:23:45
+if   echo "$START" | grep -Eq '^[0-9]{3}$'; then  START="0${START:0:1}:${START:1:2}"
+elif echo "$START" | grep -Eq '^[0-9]{4}$'; then  START="${START:0:2}:${START:2:2}"
+elif echo "$START" | grep -Eq '^[0-9]{5}$'; then  START="0${START:0:1}:${START:1:2}:${START:3:2}"
+elif echo "$START" | grep -Eq '^[0-9]{6}$'; then  START="${START:0:2}:${START:2:2}:${START:4:2}"
+fi
 
 case "$START" in
     *:*:*) START="$START" ;;
@@ -26,7 +33,8 @@ esac
 
 DURATION=`countTimeDiff2 "$START" "$STOP"`;
 
-NEW_NAME="$BASE_NAME"-clip-${START//:/.}+${DURATION//:/.}.$SUFFIX
+NEW_NAME="$BASE_NAME"-clip${2//:/.}~${3//:/.}.$SUFFIX
+NEW_NAME="${4:-$NEW_NAME}"
 
 if [ "$4" == "recode" -o "$4" == "reencode" ] ; then
     CODEC="-c:a copy -c:v libx264" # -crf 18 - doesn't work with my built ffmpeg
@@ -35,8 +43,24 @@ else
 fi
 
 set -x
-KEY_FRAMES="-force_key_frames 00:00:00.000"
-ffmpeg -i "$INPUT" -ss "$START".0 $CODEC -t "$DURATION".0  "$NEW_NAME"
+#KEY_FRAMES="-force_key_frames 00:00:00.000"
+ffmpeg -i "$INPUT" -ss "$START".0 $CODEC -t "$DURATION".0 $KEY_FRAMES "$NEW_NAME"
 set +x
 
 touch "$NEW_NAME" -r "$INPUT"
+
+
+
+##  Converts number of seconds to HH:MM:SS. Not yet used. But I need non-colon format to HH:MM:SS anyway.
+function displayTime {
+  local T=$1
+  local D=$((T/60/60/24))
+  local H=$((T/60/60%24))
+  local M=$((T/60%60))
+  local S=$((T%60))
+  (( $D > 0 )) && printf '%d days ' $D
+  (( $H > 0 )) && printf '%d hours ' $H
+  (( $M > 0 )) && printf '%d minutes ' $M
+  (( $D > 0 || $H > 0 || $M > 0 )) && printf 'and '
+  printf '%d seconds\n' $S
+}
