@@ -1,0 +1,20 @@
+Install:
+
+sudo apt-get install \
+libavcodec \
+libavdevice \
+libavformat \
+libavutil \
+libpostproc \
+libswscale \
+
+svn checkout svn://svn.ffmpeg.org/ffmpeg/trunk ffmpeg
+sudo apt-get build-dep ffmpeg
+
+cd /ffmpeg
+sudo ldconfig
+
+./configure --prefix=/usr --enable-gpl --enable-version3 --enable-nonfree --enable-postproc --enable-avfilter --enable-pthreads --enable-x11grab --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libdc1394 --enable-libdirac --enable-libfaac --enable-libfaad --enable-libgsm --enable-libmp3lame --enable-libnut --enable-libopenjpeg --enable-libschroedinger --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libxvid
+
+make
+sudo checkinstall --pkgname=ffmpeg --pkgversion "3:0.svn`date +%Y%m%d`-12ubuntu3" --default

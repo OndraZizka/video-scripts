@@ -2,11 +2,14 @@
 
 ## For the details, see https://trac.ffmpeg.org/wiki/Encode/H.264
 
-BEST_CODEC="-c:v libx264  -crf 17"         # -qp 0 is looseless.
-BEST_PRESET="-preset slow -tune film"      # -b:v 555k | 1M etc.
+BEST_CODEC="-c:v libx264  -crf 21"         # -qp 0 is looseless. DEFAULT: 23
+BEST_PRESET="-preset slower -tune film"      # -b:v 555k | 1M etc.
 BEST_PROFILE="-profile:v high -level 4.2"  ## Use the newest H264 features for encoding.
 
 BEST_VIDEO="$BEST_CODEC $BEST_PRESET $BEST_PROFILE"
+
+QUALITY_GOOD_H265="-c:v libx265 -x265-params qp=23"
+
 
 COMPAT_MODE="-pix_fmt yuv420p"
 

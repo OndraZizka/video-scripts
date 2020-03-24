@@ -31,7 +31,7 @@ set -x
 if [ "$6" == "" ] ; then
   ffplay -i "$INPUT" -vf "$FILTER"
 else
-  ffmpeg -i "$INPUT" -filter:v "$FILTER" $BEST_VIDEO_ -c:a copy "$NEW_NAME"
+  ffmpeg -i "$INPUT" -filter:v "$FILTER" $QUALITY_GOOD_H265 -c:a copy "$NEW_NAME"
   touch "$NEW_NAME" -r "$INPUT"
 fi
 set +x
