@@ -7,7 +7,7 @@ SCRIPT_DIR=$(dirname $(realpath $0))
 
 if [ -z "$1" ]; then
     #echo "usage: ./movie_preview.sh VIDEO [HEIGHT=120] [COLS=100] [ROWS=1] [OUTPUT]"
-    echo "usage: $0 <videoFile> <height:240> <cols:8> <rosw:4> <output:~_preview.jpg>"
+    echo "usage: $0 <videoFile> <height:240> <cols:6> <rosw:6> <output:~_preview.jpg>"
     exit
 fi
 
@@ -22,9 +22,9 @@ else
 fi
 
 
-HEIGHT=$2
-COLS=$3
-ROWS=$4
+HEIGHT=${2:240}
+COLS=${3:-6}
+ROWS=${4:-6}
 OUT_FILENAME="$5"
 
 
@@ -32,10 +32,10 @@ if [ -z "$HEIGHT" ]; then
     HEIGHT=240
 fi
 if [ -z "$COLS" ]; then
-    COLS=8
+    COLS=6
 fi
 if [ -z "$ROWS" ]; then
-    ROWS=4
+    ROWS=6
 fi
 if [ -z "$OUT_FILENAME" ]; then
     OUT_FILENAME="`echo "${MOVIE_NAME%.*}_preview.jpg"`"
@@ -46,7 +46,9 @@ if [ -f "$OUT_FILEPATH" ] ; then echo "Already exists, skipping: $OUT_FILEPATH";
 
 TOTAL_IMAGES=`echo "$COLS*$ROWS" | bc`
 
+
 # get total number of frames in the video
+echo "$0: Probing file: $MOVIE"
 # ffprobe is fast but not 100% reliable. It might not detect number of frames correctly!
 NB_FRAMES=`ffprobe -show_streams "$MOVIE" 2> /dev/null | grep nb_frames | head -n1 | sed 's/.*=//'`
 # `-show-streams` Show all streams found in the video. Each video has usualy two streams (video and audio).
@@ -72,7 +74,7 @@ fi
 
 # calculate offset between two screenshots, drop the floating point part
 NTH_FRAME=`echo "$NB_FRAMES/$TOTAL_IMAGES" | bc`
-echo "capture every ${NTH_FRAME}th frame out of $NB_FRAMES frames"
+echo "$0: Will capture every ${NTH_FRAME}th frame out of $NB_FRAMES frames."
 
 # make sure output dir exists
 mkdir -p "$OUT_DIR"
@@ -89,7 +91,7 @@ FFMPEG_CMD="ffmpeg -loglevel panic -i \"$MOVIE\" -y -frames 1 -q:v 1 -vf \"selec
 # # `tile=${COLS}x${ROWS}` Layout captured frames into this grid
 
 # print enire command for debugging purposes
-# echo $FFMPEG_CMD
+echo "Will run FFmpeg:\n$FFMPEG_CMD"
 
 echo "`date +%R` $OUT_FILEPATH"
 
