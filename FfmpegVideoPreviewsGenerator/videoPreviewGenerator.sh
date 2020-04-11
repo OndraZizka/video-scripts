@@ -76,24 +76,39 @@ fi
 NTH_FRAME=`echo "$NB_FRAMES/$TOTAL_IMAGES" | bc`
 echo "$0: Will capture every ${NTH_FRAME}th frame out of $NB_FRAMES frames."
 
+DURATION=`ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 "$MOVIE"`
+DURATION=${DURATION%%.}
+NTH_SECOND=`echo "$DURATION/$TOTAL_IMAGES" | bc`
+echo "$0: Will capture every ${NTH_SECOND}th second out of $DURATION seconds."
+
+
 # make sure output dir exists
 mkdir -p "$OUT_DIR"
 
 FFMPEG_CMD="ffmpeg -loglevel panic -i \"$MOVIE\" -y -frames 1 -q:v 1 -vf \"select=not(mod(n\,$NTH_FRAME)),scale=-1:${HEIGHT},tile=${COLS}x${ROWS}\" \"$OUT_FILEPATH\""
-# `-loglevel panic` We don’t want to see any output. You can remove this option if you’re having any problem to see what went wrong
-# `-i "$MOVIE"` Input file
-# `-y` Override any existing output file
-# `-frames 1` Tell `ffmpeg` that output from this command is just a single image (one frame).
-# `-q:v 3` Output quality where `0` is the best.
-# `-vf \"select=` That's where all the magic happens. Selector function for [video filter](https://trac.ffmpeg.org/wiki/FilteringGuide).
-# # `not(mod(n\,58))` Select one frame every `58` frames [see the documentation](https://www.ffmpeg.org/ffmpeg-filters.html#Examples-34).
-# # `scale=-1:120` Resize to fit `120px` height, width is adjusted automatically to keep correct aspect ration.
-# # `tile=${COLS}x${ROWS}` Layout captured frames into this grid
+# `-loglevel panic`    We don’t want to see any output. You can remove this option if you’re having any problem to see what went wrong
+# `-i "$MOVIE"`        Input file
+# `-y`                 Override any existing output file
+# `-frames 1`          Tell `ffmpeg` that output from this command is just a single image (one frame).
+# `-q:v 3`             Output quality where `0` is the best.
+# `-vf \"select=`      That's where all the magic happens. Selector function for [video filter](https://trac.ffmpeg.org/wiki/FilteringGuide).
+# # `not(mod(n\,58))`  Select one frame every `58` frames [see the documentation](https://www.ffmpeg.org/ffmpeg-filters.html#Examples-34).
+# # `scale=-1:120`     Resize to fit `120px` height, width is adjusted automatically to keep correct aspect ration.
+# # `tile=${COLS}x${ROWS}`   Layout captured frames into this grid
+
+## Update 2020:
+## Actually the approach through filters is quite slow, esp. for very long videos. This should be around 20x faster:
+##   for i in {000..$NB_FRAMES} ; do ffmpeg -accurate_seek -ss `echo $i*$NTH_FRAME | bc` -i "$MOVIE"  -frames:v 1 frame_$i.bmp; done
+##  TODO: Figure out how to see to the frame, or, compute times instead of frames: Length / NB_FRAMES.
+##  See `-ss 25+` - 25th second. And http://ffmpeg.org/ffmpeg-utils.html#time-duration-syntax
+## Then we need to make the tile.
+##   ffmpeg -i frame_%03d.bmp -filter_complex scale=120:-1,tile=5x1 output.png
+##   for i in {000..$NB_FRAMES} ; do rm frame_$i.bmp; done
+
+exit 0
 
 # print enire command for debugging purposes
 echo "Will run FFmpeg:\n$FFMPEG_CMD"
-
 echo "`date +%R` $OUT_FILEPATH"
-
 
 eval $FFMPEG_CMD
