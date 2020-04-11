@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SCRIPT_DIR=$(dirname $(realpath $0))
+. "$SCRIPT_DIR/_common.lib.sh"  # $BEST_VIDEO
+
 
 INPUT=$1
 #BASE_NAME=basename "$INPUT" .mp4
@@ -24,9 +27,10 @@ fi
 
 ## For quality settings see https://trac.ffmpeg.org/wiki/Encode/H.264
 #-b:v 1M
+QUALITY="-preset slow -tune film -c:v libx264"
+QUALITY="$QUALITY_GOOD_H265"
 set -x
-ffmpeg -noautorotate -i "$INPUT" -vf "$VF,format=yuv420p" -metadata:s:v rotate=0 \
-   -preset veryslow -tune film -c:v libx264 -c:a copy "$NEW_NAME"
+ffmpeg -noautorotate -i "$INPUT" -vf "$VF" -metadata:s:v rotate=0  $QUALITY -c:a copy "$NEW_NAME"  # Removed: $VF,format=yuv420p
 set +x
 
 touch "$NEW_NAME" -r "$INPUT"
