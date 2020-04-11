@@ -8,7 +8,10 @@ BEST_PROFILE="-profile:v high -level 4.2"  ## Use the newest H264 features for e
 
 BEST_VIDEO="$BEST_CODEC $BEST_PRESET $BEST_PROFILE"
 
-QUALITY_GOOD_H265="-c:v libx265 -x265-params qp=23"
+#QUALITY_GOOD_H265="-c:v libx265 -x265-params qp=23"
+#QUALITY_GOOD_H265="-c:v libx265 -x265-params qp=20 -preset medium -tune fastdecode"
+QUALITY_GOOD_H265="-c:v libx265 -x265-params qp=24 -preset slow"
+#QUALITY_GOOD_H265="-c:v libx265 -x265-params crf=28 -preset medium"
 
 
 COMPAT_MODE="-pix_fmt yuv420p"
