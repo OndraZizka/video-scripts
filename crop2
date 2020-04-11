@@ -7,6 +7,7 @@ INPUT=$1
 BASE_NAME=`basename "$INPUT"`
 BASE_NAME="${BASE_NAME%.*}"
 SUFFIX=${INPUT##*.}
+#SUFFIX=mkv  # Force MP4.
 
 if [ "$#" < 4 ] ; then
     echo "Expecting input file, top, right, bottom, left margin as 0.0 - 1.0, ['preview']. Examples:";
@@ -20,19 +21,20 @@ LEFT=$5
 
 ## TODO: Remove "0." from the values.
 
-NEW_NAME="$BASE_NAME-#$TOP,$RIGHT,$BOTTOM,$LEFT.$SUFFIX";
+NEW_NAME="$BASE_NAME-#${TOP##0.},${RIGHT##0.},${BOTTOM##0.},${LEFT##0.}.${SUFFIX##0.}";
 
 
 ## Also see https://incenp.org/notes/2012/video-cropping.html
 ## wid:hei:offX:offY
 FILTER="crop=in_w*(1-$LEFT-$RIGHT):in_h*(1-$TOP-$BOTTOM):in_w*$LEFT:in_h*$TOP";
+#FILTER_ROTATE=", transpose=2"  ## Additional operation, to avoid multiple encodings.
 
 set -x
 if [ "$6" == "" ] ; then
   ffplay -i "$INPUT" -vf "$FILTER"
 else
-  ffmpeg -i "$INPUT" -filter:v "$FILTER" $QUALITY_GOOD_H265 -c:a copy "$NEW_NAME"
-  touch "$NEW_NAME" -r "$INPUT"
+  ffmpeg -i "$INPUT" -filter:v "$FILTER $FILTER_ROTATE" $QUALITY_GOOD_H265 -c:a copy "$NEW_NAME" \
+  && touch "$NEW_NAME" -r "$INPUT"
 fi
 set +x
 
