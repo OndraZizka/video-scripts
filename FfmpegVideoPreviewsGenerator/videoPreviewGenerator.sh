@@ -22,7 +22,7 @@ else
 fi
 
 
-HEIGHT=${2:240}
+HEIGHT=${2:-240}
 COLS=${3:-6}
 ROWS=${4:-6}
 OUT_FILENAME="$5"
@@ -39,6 +39,7 @@ if [ -z "$ROWS" ]; then
 fi
 if [ -z "$OUT_FILENAME" ]; then
     OUT_FILENAME="`echo "${MOVIE_NAME%.*}_preview.jpg"`"
+    #OUT_FILENAME="`echo "${MOVIE_NAME%.*}_pre${COLS}x${ROWS}.png"`"
 fi
 
 OUT_FILEPATH="`echo "$OUT_DIR/$OUT_FILENAME"`"
@@ -78,12 +79,36 @@ echo "$0: Will capture every ${NTH_FRAME}th frame out of $NB_FRAMES frames."
 
 DURATION=`ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 "$MOVIE"`
 DURATION=${DURATION%%.}
-NTH_SECOND=`echo "$DURATION/$TOTAL_IMAGES" | bc`
+NTH_SECOND=`echo "scale=3; $DURATION/$TOTAL_IMAGES" | bc`
 echo "$0: Will capture every ${NTH_SECOND}th second out of $DURATION seconds."
 
 
 # make sure output dir exists
 mkdir -p "$OUT_DIR"
+
+
+
+rm -f /tmp/videoPreviewGenerator/*
+mkdir -p /tmp/videoPreviewGenerator/
+#TOTAL_IMAGES=0
+for i in `seq -f '%03.f' 1 $TOTAL_IMAGES`; do
+#for i in `seq -f '%03f' 1 $NTH_SECOND $DURATION`; do
+  #echo "scale=3; $i * $NTH_SECOND"
+  offset=`echo "scale=3; $i * $NTH_SECOND" | bc`
+  echo "  Tile $i -> offset $offset"
+  ffmpeg -loglevel panic -accurate_seek -ss "$offset" -i "$MOVIE"  -frames:v 1 /tmp/videoPreviewGenerator/frame_$i.bmp
+done
+##  TODO: Figure out how to see to the frame, or, compute times instead of frames: Length / NB_FRAMES.
+##  See `-ss 25+` - 25th second. And http://ffmpeg.org/ffmpeg-utils.html#time-duration-syntax
+## Then we need to make the tile.
+#ffmpeg -i /tmp/videoPreviewGenerator/frame_%03d.bmp -y -frames 1 -q:v 1  -vf "scale=-1:120,tile=${COLS}x${ROWS}" "$OUT_FILEPATH"
+ffmpeg -i /tmp/videoPreviewGenerator/frame_%03d.bmp -frames 1 -q:v 1 -filter_complex "scale=-1:$HEIGHT,tile=${COLS}x${ROWS}" "$OUT_FILEPATH"
+#montage *.jpg -mode Concatenate -tile 6x5 montage.jpg
+exit 0
+
+
+## Original way
+## The approach through filters is quite slow, esp. for very long videos. The above should be around 20x faster.
 
 FFMPEG_CMD="ffmpeg -loglevel panic -i \"$MOVIE\" -y -frames 1 -q:v 1 -vf \"select=not(mod(n\,$NTH_FRAME)),scale=-1:${HEIGHT},tile=${COLS}x${ROWS}\" \"$OUT_FILEPATH\""
 # `-loglevel panic`    We don’t want to see any output. You can remove this option if you’re having any problem to see what went wrong
@@ -96,19 +121,9 @@ FFMPEG_CMD="ffmpeg -loglevel panic -i \"$MOVIE\" -y -frames 1 -q:v 1 -vf \"selec
 # # `scale=-1:120`     Resize to fit `120px` height, width is adjusted automatically to keep correct aspect ration.
 # # `tile=${COLS}x${ROWS}`   Layout captured frames into this grid
 
-## Update 2020:
-## Actually the approach through filters is quite slow, esp. for very long videos. This should be around 20x faster:
-##   for i in {000..$NB_FRAMES} ; do ffmpeg -accurate_seek -ss `echo $i*$NTH_FRAME | bc` -i "$MOVIE"  -frames:v 1 frame_$i.bmp; done
-##  TODO: Figure out how to see to the frame, or, compute times instead of frames: Length / NB_FRAMES.
-##  See `-ss 25+` - 25th second. And http://ffmpeg.org/ffmpeg-utils.html#time-duration-syntax
-## Then we need to make the tile.
-##   ffmpeg -i frame_%03d.bmp -filter_complex scale=120:-1,tile=5x1 output.png
-##   for i in {000..$NB_FRAMES} ; do rm frame_$i.bmp; done
-
-exit 0
 
 # print enire command for debugging purposes
 echo "Will run FFmpeg:\n$FFMPEG_CMD"
 echo "`date +%R` $OUT_FILEPATH"
-
 eval $FFMPEG_CMD
+echo
