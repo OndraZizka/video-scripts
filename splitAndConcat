@@ -18,7 +18,7 @@ SUFFIX=${VIDEO_FILE##*.}
 
 if [ "$#" -lt 2 ] ; then 
     echo -e "  Usage:\n";
-    echo -e "    $0 <videoPath> <timesFilePath>";
+    echo -e "    $0 <videoPath> <timesFilePath> [splitOnly]";
     echo -e " Expecting input <videoPath> and input <timesFilePath> with times to split and concat '[m]m:ss [m]m:ss\\\\n' per part.\n"; 
     echo -e "    <timesFilePath> format: One line per video part: "
     echo -e "       '[m]m:ss [m]m:ss\\\\n' per part.\n";
@@ -27,16 +27,19 @@ fi
     
 
 echo -e "\n\n   Splitting $VIDEO_FILE as per $TIMES_FILE\n\n";
-rm -rf tmpVideoSplit
-mkdir -p tmpVideoSplit
-cd tmpVideoSplit
+
+OUT_DIR="."
+if [ "$3" == "" ] ; then
+  OUT_DIR="tmpVideoSplit"
+  rm -rf "$OUT_DIR/*"
+  mkdir -p "$OUT_DIR"
+fi
 
 
-#while IFS='' read -r SLINE; do ## || [[ -n $SLINE ]] 
 IFS=$'\n'
 PART_INDEX=0;
-for SLINE in `cat ../$TIMES_FILE`; do
-  echo SLINE: $SLINE
+for SLINE in `cat "$TIMES_FILE"`; do  ### Bash has a bug/feature which cripples the SLINE value when using `read`.
+  echo "SLINE: $SLINE"
   PART_INDEX=$((PART_INDEX+1));
   T1=`echo "$SLINE" | cut -d' ' -f1`
   T2=`echo "$SLINE" | cut -d' ' -f2`
@@ -45,18 +48,20 @@ for SLINE in `cat ../$TIMES_FILE`; do
   echo -e "\n   Running" $BLUE "$CLIP" "../$VIDEO_FILE" "$T1" "$T2" "$NOCOLOR\n"
   #bash -c "$CLIP" "../$VIDEO_FILE" "$T1" "$T2" part-$PART_INDEX.$SUFFIX
   #exec -c "$CLIP" "../$VIDEO_FILE" "$T1" "$T2" part-$PART_INDEX.$SUFFIX
-  `"$CLIP" "../$VIDEO_FILE" "$T1" "$T2" part-$PART_INDEX.$SUFFIX` ### There's some bug in bash which cripples the SLINE value when using `read`.
-#done < "../$TIMES_FILE"
+  `"$CLIP" "$OUT_DIR/$VIDEO_FILE" "$T1" "$T2" "$BASE_NAME-clip$PART_INDEX-$T1~$T2.$SUFFIX"`
 done
 
-#exit  ###
-cd ..
+## On 3rd param nonempty, only split (no concat).
+if [ "$3" != "" ] ; then exit 0; fi
+
+
+## ---- Concat ----
 
 NEW_NAME="$BASE_NAME"-splitConcat.$SUFFIX
 
-#find tmpVideoSplit/ -maxdepth 1 -type f -iname '*.mp4' -o -iname '*.mov' -o -iname '*.avi' -exec echo file \'{}\' \; > tmpVideoSplit/.list.txt 
-find tmpVideoSplit/ -maxdepth 1 -type f -not -iname '*.txt' -exec echo {} \; | sort > tmpVideoSplit/list.txt 
-~/sc/vid/concat tmpVideoSplit/list.txt "$NEW_NAME" #"${VIDEO_FILE}-concat"
+#find "$OUT_DIR/" -maxdepth 1 -type f -iname '*.mp4' -o -iname '*.mov' -o -iname '*.avi' -exec echo file \'{}\' \; > "$OUT_DIR"/.list.txt 
+find "$OUT_DIR/" -maxdepth 1 -type f -not -iname '*.txt' -exec echo {} \; | sort > "$OUT_DIR/list.txt" 
+~/sc/vid/concat "$OUT_DIR/list.txt" "$NEW_NAME"
 
 
 touch "$NEW_NAME" -r "$VIDEO_FILE"
