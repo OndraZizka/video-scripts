@@ -13,7 +13,8 @@ TILE_WID=512; TILE_HEI=288  ## Fits 6 x 5
 TILE_WID=416; TILE_HEI=234  ## 16:9 * 26; fits 8 x 6
 ##  UltraHD = 3840 x 2160
 TILE_WID=480; TILE_HEI=270  ## fits 8 x 8
-
+NL="
+"
 
 if [ ! -d "$1" -a '-' != "$1" ] ; then 
     echo "Usage: $0 <inputDir|-> [<cols> [<rows>]]"; exit 1; 
@@ -21,16 +22,19 @@ fi
 
 if [ '-' == "$1" ] ; then
   ## A list of inputs is on standard input.
+  ## This automatically computes the number of rows and columns to accomodate all inputs.
   INPUT_COUNT=0
   while read -r LINE; do
-    INPUTS="$INPUTS -i $LINE";
+    INPUTS="$INPUTS -i '$LINE' \\$NL";
     ((INPUT_COUNT += 1))
+    #if [ "$INPUT_COUNT" == "$TILES_COUNT" ] ; then continue; fi
   done;
   
   SQRT=$(echo "scale=2;sqrt($INPUT_COUNT)" | bc)
-  SQRT=$(($SQRT%1 ? $SQRT + 1 : SQRT))
+  SQRT=$(echo " ($SQRT + 0.5) / 1" | bc)
   COLS=$SQRT
   ROWS=$SQRT
+  echo "# $INPUT_COUNT inputs -> $COLS cols x $ROWS rows (computed by sqrt())"
 else
   INPUTS_DIR="$1"
   ## We will search for the inputs and pick randomly. This part is tailored to me, should be externalized.
@@ -44,6 +48,10 @@ else
             -a ! -name '*-2.*' -a ! -name '*-2-*' \
             -a -size +1500M -a -size -3000M \
             | shuf | head -n $INPUT_COUNT | xargs  -r -l -I {}  echo "     -i '{}' \\\\"`
+
+  ## TODO: Create a script to select candidates, including length checks.
+  ## find .  -size +1500M -a -size -3000M | egrep '^\./.*(mov|MOV|MP4|mp4|mkv|MKV)$' | grep Svyc | egrep -v -- '-(1|2|3)(-|\.)' | egrep -v -- '-{clip|crop|mute)' | egrep -v '^tiled' | sort --random-sort | head -n64 | ~/sc/vid/tile.sh - > makeTile-2.sh
+
 fi
 ## Now we should have: INPUTS, COLS, ROWS, INPUT_COUNT.
 
@@ -72,12 +80,12 @@ SIZE=$((TILE_WID*COLS))x$((TILE_HEI*ROWS));
 XSTACK_LAYOUT="`echo $XSTACK_LAYOUT | sed 's#^|##'`";
 
 echo "ffmpeg \\
-$INPUTS
-    -filter_complex \"
+$INPUTS \\
+     -filter_complex \"
 $STREAMS\
     ${XSTACK_SOURCES}xstack=inputs=$INPUT_COUNT:layout=$XSTACK_LAYOUT\
     \" \
-     -c:v libx264 ./tiled.mp4
+     -c:v libx264 ./tiled_`date --iso-8601`_$RANDOM.mp4
   ";
 
 ## $OVERLAYS was replaced with the xstack line.
