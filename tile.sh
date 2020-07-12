@@ -8,10 +8,11 @@
 ## Either processes the files in 
 
 TILE_WID=480; TILE_HEI=270
-## My UWQHD = 3440 x 1440
+##  My UWQHD = 3440 x 1440
 TILE_WID=512; TILE_HEI=288  ## Fits 6 x 5
 TILE_WID=416; TILE_HEI=234  ## 16:9 * 26; fits 8 x 6
-
+##  UltraHD = 3840 x 2160
+TILE_WID=480; TILE_HEI=270  ## fits 8 x 8
 
 
 if [ ! -d "$1" -a '-' != "$1" ] ; then 
@@ -40,7 +41,8 @@ else
             ! -name '*-clip*' -a ! -name '*-crop*' -a ! -name '*-mute*' -a ! -iname '*zivot*' \
             -a ! -name '*-0.*' -a ! -name '*-0-*' \
             -a ! -name '*-1.*' -a ! -name '*-1-*' \
-            -a -size +2000M -a -size -3000M \
+            -a ! -name '*-2.*' -a ! -name '*-2-*' \
+            -a -size +1500M -a -size -3000M \
             | shuf | head -n $INPUT_COUNT | xargs  -r -l -I {}  echo "     -i '{}' \\\\"`
 fi
 ## Now we should have: INPUTS, COLS, ROWS, INPUT_COUNT.
