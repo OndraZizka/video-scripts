@@ -23,7 +23,7 @@ if [ '-' == "$1" ] ; then
   ## A list of inputs is on standard input.
   INPUT_COUNT=0
   while read -r LINE; do
-    INPUTS=" -i $LINE";
+    INPUTS="$INPUTS -i $LINE";
     ((INPUT_COUNT += 1))
   done;
   
