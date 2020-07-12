@@ -38,8 +38,8 @@ if [ -z "$ROWS" ]; then
     ROWS=6
 fi
 if [ -z "$OUT_FILENAME" ]; then
-    OUT_FILENAME="`echo "${MOVIE_NAME%.*}_preview.jpg"`"
-    #OUT_FILENAME="`echo "${MOVIE_NAME%.*}_pre${COLS}x${ROWS}.png"`"
+    #OUT_FILENAME="`echo "${MOVIE_NAME%.*}_preview.jpg"`"
+    OUT_FILENAME="`echo "${MOVIE_NAME%.*}_pre${COLS}x${ROWS}.png"`"
 fi
 
 OUT_FILEPATH="`echo "$OUT_DIR/$OUT_FILENAME"`"
@@ -78,7 +78,7 @@ NTH_FRAME=`echo "$NB_FRAMES/$TOTAL_IMAGES" | bc`
 echo "$0: Will capture every ${NTH_FRAME}th frame out of $NB_FRAMES frames."
 
 DURATION=`ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 "$MOVIE"`
-DURATION=${DURATION%%.}
+DURATION=`echo "$DURATION - .5" | bc`  #${DURATION%%.}
 NTH_SECOND=`echo "scale=3; $DURATION/$TOTAL_IMAGES" | bc`
 echo "$0: Will capture every ${NTH_SECOND}th second out of $DURATION seconds."
 
