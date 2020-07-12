@@ -1,0 +1,54 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(dirname $(realpath $0))
+. "$SCRIPT_DIR/_common.lib.sh"  # $BEST_VIDEO
+
+INPUT=$1
+BASE_NAME=`basename "$INPUT"`
+BASE_NAME="${BASE_NAME%.*}"
+SUFFIX=${INPUT##*.}
+#SUFFIX=mkv  # Force
+
+if [ "$#" -lt 1 ] ; then
+    echo "Expecting input file as param."
+    exit;
+fi
+
+## TODO: Remove "0." from the values.
+
+NEW_NAME="$BASE_NAME-ileaved.$SUFFIX";
+
+
+echo -e "\n\n----------------------------------------------------------------------------------"
+echo -e "  Interlacing to $NEW_NAME ...\n"
+
+## Also see https://incenp.org/notes/2012/video-cropping.html
+## wid:hei:offX:offY
+FILTER="-filtercomplex";
+FILTER='
+[in] split [a][b]; 
+[a] crop=1920:540:0:0 [ac]; 
+[b] crop=1920:540:1920:0 [bc]; 
+[ac][bc] vstack [stack];
+[stack] il=luma_mode=interleave:chroma_mode=interleave'
+
+#ffplay "$INPUT" -vf 
+
+#exit 111
+#ffmpeg -i top.avi -i bottom.avi -filter_complex vstack,il=l=i:c=i -c:v ffv1 il.avi
+#ffmpeg -i top.avi -i bottom.avi -filter_complex vstack,il=luma_mode=interleave:chroma_mode=interleave -c:v ffv1 il.avi
+
+
+
+
+if [ "$2" != "" ] ; then
+  ffplay -i "$INPUT" -vf "$FILTER"
+else
+  set -x
+  ffmpeg -i "$INPUT" -filter:v "$FILTER" $QUALITY_GOOD_H265 -c:a copy "$NEW_NAME" \
+  && touch "$NEW_NAME" -r "$INPUT"
+  set +x
+fi
+
+
+
