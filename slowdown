@@ -16,10 +16,14 @@ fi
 NEW_NAME="$BASE_NAME"-slow$RATIO.$SUFFIX
 
 
+## See https://trac.ffmpeg.org/wiki/How%20to%20speed%20up%20/%20slow%20down%20a%20video
+
 set -x
 ## ffmpeg -i "$INPUT" -ss 00:"$2".0 -c copy -t 00:"$3".0 "$NEW_NAME"
-ffmpeg -i "$INPUT" -filter_complex "[0:v]setpts=$RATIO*PTS[v];[0:a]atempo=${RATIO}[a]" -map "[v]" -map "[a]" "$NEW_NAME"
-## See https://trac.ffmpeg.org/wiki/How%20to%20speed%20up%20/%20slow%20down%20a%20video
+#ffmpeg -i "$INPUT" -filter_complex "[0:v]setpts=$RATIO*PTS[v];[0:a]atempo=${RATIO}[a]" -map "[v]" -map "[a]" "$NEW_NAME"
+
+## If there is no audio stream:
+ffmpeg -i "$INPUT" -filter_complex "[0:v]setpts=$RATIO*PTS[v]" -map "[v]" "$NEW_NAME"
 set +x
 
 touch "$NEW_NAME" -r "$INPUT"

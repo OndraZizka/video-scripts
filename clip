@@ -3,7 +3,7 @@
 SCRIPT_DIR=$(dirname $(realpath $0))
 . "$SCRIPT_DIR/_common.lib.sh"  # $BEST_VIDEO
 
-INPUT=$1
+INPUT="$1"
 BASE_NAME=`basename "$INPUT"`
 BASE_NAME="${BASE_NAME%.*}"
 SUFFIX=${INPUT##*.}
