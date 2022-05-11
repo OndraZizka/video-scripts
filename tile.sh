@@ -41,19 +41,21 @@ else
   COLS=${2:-6}
   ROWS=${3:-5}
   INPUT_COUNT=$((COLS * ROWS))
+  set -x
   INPUTS=`find $INPUTS_DIR \( -iname '*.mp4' -o -iname '*.avi' -o -iname '*.mkv' -o -iname '*.webm' -o -iname '*.mov' \) \
             ! -name '*-clip*' -a ! -name '*-crop*' -a ! -name '*-mute*' -a ! -iname '*zivot*' \
             -a ! -name '*-0.*' -a ! -name '*-0-*' \
             -a ! -name '*-1.*' -a ! -name '*-1-*' \
             -a ! -name '*-2.*' -a ! -name '*-2-*' \
-            -a -size +1500M -a -size -3000M \
+            -a -size +1500M -a -size -4500M \
             | shuf | head -n $INPUT_COUNT | xargs  -r -l -I {}  echo "     -i '{}' \\\\"`
+  set +x
 
   ## TODO: Create a script to select candidates, including length checks.
   ## find .  -size +1500M -a -size -3000M | egrep '^\./.*(mov|MOV|MP4|mp4|mkv|MKV)$' | grep Svyc | egrep -v -- '-(1|2|3)(-|\.)' | egrep -v -- '-{clip|crop|mute)' | egrep -v '^tiled' | sort --random-sort | head -n64 | ~/sc/vid/tile.sh - > makeTile-2.sh
-
 fi
 ## Now we should have: INPUTS, COLS, ROWS, INPUT_COUNT.
+
 
 I=0
 Y=0
@@ -80,7 +82,7 @@ SIZE=$((TILE_WID*COLS))x$((TILE_HEI*ROWS));
 XSTACK_LAYOUT="`echo $XSTACK_LAYOUT | sed 's#^|##'`";
 
 echo "ffmpeg \\
-$INPUTS \\
+$INPUTS 
      -filter_complex \"
 $STREAMS\
     ${XSTACK_SOURCES}xstack=inputs=$INPUT_COUNT:layout=$XSTACK_LAYOUT\
