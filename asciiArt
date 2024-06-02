@@ -10,3 +10,7 @@ FFMPEG=ffmpeg
 # mplayer -vo aa:width=160:height=80 -monitorpixelaspect $INPUT
 export CACA_GEOMETRY=220x78
 mplayer -vo caca $INPUT
+
+
+
+# ffmpeg 6.x: Doesn't work (for me). Try `ffmpeg-ascii` which works: https://github.com/pzich/ffmpeg-ascii/
