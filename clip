@@ -19,6 +19,12 @@ elif echo "$START" | grep -Eq '^[0-9]{5}$'; then  START="0${START:0:1}:${START:1
 elif echo "$START" | grep -Eq '^[0-9]{6}$'; then  START="${START:0:2}:${START:2:2}:${START:4:2}"
 fi
 
+if   echo "$STOP" | grep -Eq '^[0-9]{3}$'; then  STOP="0${STOP:0:1}:${STOP:1:2}"
+elif echo "$STOP" | grep -Eq '^[0-9]{4}$'; then  STOP="${STOP:0:2}:${STOP:2:2}"
+elif echo "$STOP" | grep -Eq '^[0-9]{5}$'; then  STOP="0${STOP:0:1}:${STOP:1:2}:${STOP:3:2}"
+elif echo "$STOP" | grep -Eq '^[0-9]{6}$'; then  STOP="${STOP:0:2}:${STOP:2:2}:${STOP:4:2}"
+fi
+
 case "$START" in
     *:*:*) START="$START" ;;
     *:*)   START="00:$START" ;;
@@ -31,7 +37,9 @@ case "$STOP" in
     *)     STOP="00:00:$STOP" ;;
 esac
 
-DURATION=`countTimeDiff2 "$START" "$STOP"`;
+
+#echo DURATION=countTimeDiff3 "$START" "$STOP";
+DURATION=`countTimeDiff3 "$START" "$STOP"`;
 
 NEW_NAME="$BASE_NAME"-clip${2//:/.}~${3//:/.}.$SUFFIX
 NEW_NAME="${4:-$NEW_NAME}"

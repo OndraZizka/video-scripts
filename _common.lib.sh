@@ -24,12 +24,25 @@ NOCOLOR='\033[0m'
 ###
 ###  Compute difference between two dates
 ###
+function countTimeDiff3() {
+    # 1. Get epoch seconds for both
+    # We use "1970-01-01" as a base to ensure we are dealing with pure durations
+    StartDate=$(date -u -d "1970-01-01 $1" +"%s")
+    FinalDate=$(date -u -d "1970-01-01 $2" +"%s")
+    
+    # 2. Subtract them using Bash math
+    DIFF_SECONDS=$(( FinalDate - StartDate ))
+    
+    # 3. Format the difference back to HH:MM:SS
+    date -u -d "@$DIFF_SECONDS" +"%H:%M:%S"
+}
+
 function countTimeDiff2() {
-    set -x
+    #set -x
     StartDate=$(date -u -d "$1" +"%s")
     FinalDate=$(date -u -d "$2" +"%s")
     date -u -d "0 $FinalDate sec - $StartDate sec" +"%H:%M:%S"
-    set +x
+    #set +x
 }
 
 function countTimeDiff() {
